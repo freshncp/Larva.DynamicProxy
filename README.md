@@ -68,7 +68,6 @@ var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory
     new System.Type[] {
         typeof(UserLoginCounterInterceptor)
     });
-Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
 userLoginService.Login("jack", "123456");
 userLoginService.Login("rose", "123456");
 
@@ -80,4 +79,13 @@ var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyTyp
 var userLoginService = (IUserLoginService)Activator.CreateInstance(userLoginServiceType);
 userLoginService.Login("jack", "123456");
 userLoginService.Login("rose", "123456");
+```
+
+## 更新历史
+
+### 1.0.0 (更新日期：2019/10/01)
+
+```plain
+1）基于对象，返回指定接口的代理类对象，此代理类引用原始对象；
+2）基于类型，返回值ID难过接口的代理类，此代理类拥有原始类Public的构造函数支持消息路由、顺序消费。
 ```
