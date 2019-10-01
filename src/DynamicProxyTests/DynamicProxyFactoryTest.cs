@@ -1,6 +1,7 @@
 using System;
 using DynamicProxyTests.Application;
 using DynamicProxyTests.Interceptors;
+using DynamicProxyTests.Repositories;
 using Xunit;
 
 namespace DynamicProxyTests
@@ -10,7 +11,8 @@ namespace DynamicProxyTests
         [Fact]
         public void TestCreateProxyT()
         {
-            var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(new UserLoginService(),
+            var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
+                new UserLoginService(new UserLoginRepository()),
                 new System.Type[] {
                     typeof(UserLoginCounterInterceptor)
                 });
@@ -22,7 +24,9 @@ namespace DynamicProxyTests
         [Fact]
         public void TestCreateProxy()
         {
-            var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(typeof(IUserLoginService), new UserLoginService(),
+            var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(
+                typeof(IUserLoginService),
+                new UserLoginService(new UserLoginRepository()),
                 new System.Type[] {
                     typeof(UserLoginCounterInterceptor)
                 });
@@ -34,12 +38,18 @@ namespace DynamicProxyTests
         [Fact]
         public void TestCreateProxyType()
         {
-            var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(typeof(IUserLoginService), typeof(UserLoginService),
-                new System.Type[] {
+            var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
+                typeof(IUserLoginService),
+                typeof(UserLoginService),
+                new Type[] {
                     typeof(UserLoginCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByNewObj", userLoginServiceType.Name);
-            var userLoginService = (IUserLoginService)Activator.CreateInstance(userLoginServiceType);
+            var userLoginService = (IUserLoginService)Activator.CreateInstance(
+                userLoginServiceType,
+                new object[] {
+                    new UserLoginRepository()
+                });
             userLoginService.Login("jack", "123456");
             userLoginService.Login("rose", "123456");
         }
@@ -48,10 +58,12 @@ namespace DynamicProxyTests
         public void TestCreateProxyTypeWhenNoPublicConstructor()
         {
             Assert.Throws<Larva.DynamicProxy.InvalidProxiedTypeException>(() => {
-                var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(typeof(IUserLoginService), typeof(AnotherUserLoginService),
-                new System.Type[] {
-                    typeof(UserLoginCounterInterceptor)
-                });
+                var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
+                    typeof(IUserLoginService),
+                    typeof(AnotherUserLoginService),
+                    new Type[] {
+                        typeof(UserLoginCounterInterceptor)
+                    });
             });
         }
     }
