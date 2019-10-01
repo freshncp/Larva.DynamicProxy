@@ -13,7 +13,7 @@ namespace DynamicProxyTests
         {
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
-                new System.Type[] {
+                new Type[] {
                     typeof(UserLoginCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
@@ -27,7 +27,7 @@ namespace DynamicProxyTests
             var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(
                 typeof(IUserLoginService),
                 new UserLoginService(new UserLoginRepository()),
-                new System.Type[] {
+                new Type[] {
                     typeof(UserLoginCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);

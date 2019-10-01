@@ -3,7 +3,7 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 
 - 基于对象，返回指定接口的代理类对象，此代理类引用原始对象；
 
-- 基于类型，返回值ID难过接口的代理类，此代理类拥有原始类Public的构造函数；
+- 基于类型，返回指定接口的代理类，此代理类拥有原始类Public的构造函数；
 
 - 通过实现 IInvocation 接口，并将其实现类的类型作为参数传入创建代理或代理类，即可实现AOP。
 
@@ -91,7 +91,7 @@ public class ExampleInterceptor : Larva.DynamicProxy.IInterceptor
 // 使用泛型参数，基于对象创建代理对象
 var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
     new UserLoginService(new UserLoginRepository()),
-    new System.Type[] {
+    new Type[] {
         typeof(UserLoginCounterInterceptor)
     });
 userLoginService.Login("jack", "123456");
@@ -101,7 +101,7 @@ userLoginService.Login("rose", "123456");
 var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(
     typeof(IUserLoginService),
     new UserLoginService(new UserLoginRepository()),
-    new System.Type[] {
+    new Type[] {
         typeof(UserLoginCounterInterceptor)
     });
 userLoginService.Login("jack", "123456");
@@ -111,7 +111,7 @@ userLoginService.Login("rose", "123456");
 var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
     typeof(IUserLoginService),
     typeof(UserLoginService),
-    new System.Type[] {
+    new Type[] {
         typeof(UserLoginCounterInterceptor)
     });
 var userLoginService = (IUserLoginService)Activator.CreateInstance(
@@ -129,6 +129,6 @@ userLoginService.Login("rose", "123456");
 
 ```plain
 1）基于对象，返回指定接口的代理类对象，此代理类引用原始对象；
-2）基于类型，返回值ID难过接口的代理类，此代理类拥有原始类Public的构造函数；
+2）基于类型，返回指定接口的代理类，此代理类拥有原始类Public的构造函数；
 3）通过实现 IInvocation 接口，并将其实现类的类型作为参数传入创建代理或代理类，即可实现AOP。
 ```
