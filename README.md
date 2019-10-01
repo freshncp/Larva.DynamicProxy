@@ -1,9 +1,11 @@
 # Larva.DynamicProxy
 dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅支持通过实现接口来创建代理类。
 
-- 基于对象，返回指定接口的代理类对象，此代理类引用原始对象
+- 基于对象，返回指定接口的代理类对象，此代理类引用原始对象；
 
-- 基于类型，返回值ID难过接口的代理类，此代理类拥有原始类Public的构造函数
+- 基于类型，返回值ID难过接口的代理类，此代理类拥有原始类Public的构造函数；
+
+- 通过实现 IInvocation 接口，并将其实现类的类型作为参数传入创建代理或代理类，即可实现AOP。
 
 
 ## 安装Nuget包
@@ -55,6 +57,17 @@ public class UserLoginCounterInterceptor : Larva.DynamicProxy.StandardIntercepto
     }
 }
 
+// 也可以直接实现接口 Larva.DynamicProxy.IInterceptor
+public class ExampleInterceptor : Larva.DynamicProxy.IInterceptor
+{
+    public void Intercept(IInvocation invocation)
+    {
+        //TODO:执行前
+        invocation.Proceed();
+        //TODO:执行后
+    }
+}
+
 // 使用泛型参数，基于对象创建代理对象
 var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(new UserLoginService(),
     new System.Type[] {
@@ -87,5 +100,6 @@ userLoginService.Login("rose", "123456");
 
 ```plain
 1）基于对象，返回指定接口的代理类对象，此代理类引用原始对象；
-2）基于类型，返回值ID难过接口的代理类，此代理类拥有原始类Public的构造函数支持消息路由、顺序消费。
+2）基于类型，返回值ID难过接口的代理类，此代理类拥有原始类Public的构造函数；
+3）通过实现 IInvocation 接口，并将其实现类的类型作为参数传入创建代理或代理类，即可实现AOP。
 ```
