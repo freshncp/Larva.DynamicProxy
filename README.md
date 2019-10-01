@@ -17,6 +17,20 @@ Install-Package Larva.DynamicProxy
 ## 调用示例
 
 ```csharp
+public interface IUserLoginRepository
+{
+    bool Validate(string userName, string password);
+}
+
+public class UserLoginRepository : IUserLoginRepository
+{
+    public bool Validate(string userName, string password)
+    {
+        //TODO: validate
+        return true;
+    }
+}
+
 public interface IUserLoginService
 {
     bool Login(string userName, string password);
@@ -24,10 +38,16 @@ public interface IUserLoginService
 
 public class UserLoginService : IUserLoginService
 {
+    private IUserLoginRepository _userLoginRepository;
+
+    public UserLoginService(IUserLoginRepository userLoginRepository)
+    {
+        _userLoginRepository = userLoginRepository;
+    }
+
     public bool Login(string userName, string password)
     {
-        //TODO: Validate
-        return true;
+        return _userLoginRepository.Validate(userName, password);
     }
 }
 
@@ -69,7 +89,8 @@ public class ExampleInterceptor : Larva.DynamicProxy.IInterceptor
 }
 
 // 使用泛型参数，基于对象创建代理对象
-var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(new UserLoginService(),
+var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
+    new UserLoginService(new UserLoginRepository()),
     new System.Type[] {
         typeof(UserLoginCounterInterceptor)
     });
@@ -77,7 +98,9 @@ userLoginService.Login("jack", "123456");
 userLoginService.Login("rose", "123456");
 
 // 基于对象创建代理对象
-var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(typeof(IUserLoginService), new UserLoginService(),
+var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(
+    typeof(IUserLoginService),
+    new UserLoginService(new UserLoginRepository()),
     new System.Type[] {
         typeof(UserLoginCounterInterceptor)
     });
@@ -85,11 +108,17 @@ userLoginService.Login("jack", "123456");
 userLoginService.Login("rose", "123456");
 
 // 基于类型创建代理类，代理类拥有和原始类相同的Public的构造函数
-var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(typeof(IUserLoginService), typeof(UserLoginService),
+var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
+    typeof(IUserLoginService),
+    typeof(UserLoginService),
     new System.Type[] {
         typeof(UserLoginCounterInterceptor)
     });
-var userLoginService = (IUserLoginService)Activator.CreateInstance(userLoginServiceType);
+var userLoginService = (IUserLoginService)Activator.CreateInstance(
+    userLoginServiceType,
+    new object[] {
+        new UserLoginRepository()
+    });
 userLoginService.Login("jack", "123456");
 userLoginService.Login("rose", "123456");
 ```
