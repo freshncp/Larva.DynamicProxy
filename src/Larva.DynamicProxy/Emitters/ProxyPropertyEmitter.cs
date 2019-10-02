@@ -39,7 +39,7 @@ namespace Larva.DynamicProxy.Emitters
 
                 // Create interceptors
                 generator.Emit(OpCodes.Ldsfld, interceptorTypesField);
-                generator.Emit(OpCodes.Call, typeof(EmitterHelper).GetMethod(nameof(EmitterHelper.CreateInterceptors), new Type[] { typeof(Type[]) }));
+                generator.Emit(OpCodes.Call, typeof(EmitterHelper).GetTypeInfo().GetMethod(nameof(EmitterHelper.CreateInterceptors), new Type[] { typeof(Type[]) }));
                 generator.Emit(OpCodes.Stloc, interceptorsVar);
 
                 // Get proxiedObj
@@ -50,13 +50,13 @@ namespace Larva.DynamicProxy.Emitters
                 // Get proxiedObj's method
                 generator.Emit(OpCodes.Ldtoken, proxiedTypePropertyInfo.GetMethod);
                 generator.Emit(OpCodes.Ldtoken, proxiedTypePropertyInfo.GetMethod.DeclaringType);
-                generator.Emit(OpCodes.Call, typeof(MethodBase).GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
+                generator.Emit(OpCodes.Call, typeof(MethodBase).GetTypeInfo().GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
                 generator.Emit(OpCodes.Stloc, methodInvocationTargetVar);
 
                 // Get proxy's method
                 generator.Emit(OpCodes.Ldtoken, getMethod);
                 generator.Emit(OpCodes.Ldtoken, getMethod.DeclaringType);
-                generator.Emit(OpCodes.Call, typeof(MethodBase).GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
+                generator.Emit(OpCodes.Call, typeof(MethodBase).GetTypeInfo().GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
                 generator.Emit(OpCodes.Stloc, methodVar);
 
                 // Newobj DefaultInvocation
@@ -69,17 +69,17 @@ namespace Larva.DynamicProxy.Emitters
                 generator.Emit(OpCodes.Ldloc, methodInvocationTargetVar);
                 generator.Emit(OpCodes.Ldarg_0);
                 generator.Emit(OpCodes.Ldloc, methodVar);
-                generator.Emit(OpCodes.Newobj, typeof(DefaultInvocation).GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(MemberTypes), typeof(string), typeof(MemberOperateTypes), typeof(object[]), typeof(object), typeof(MethodInfo), typeof(object), typeof(MethodInfo) }));
+                generator.Emit(OpCodes.Newobj, typeof(DefaultInvocation).GetTypeInfo().GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(MemberTypes), typeof(string), typeof(MemberOperateTypes), typeof(object[]), typeof(object), typeof(MethodInfo), typeof(object), typeof(MethodInfo) }));
                 generator.Emit(OpCodes.Stloc, invocationVar);
 
                 // invocation.Proceed
                 generator.Emit(OpCodes.Ldloc, invocationVar);
-                generator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetMethod(nameof(IInvocation.Proceed)));
+                generator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetTypeInfo().GetMethod(nameof(IInvocation.Proceed)));
 
                 var returnObj = generator.DeclareLocal(proxiedTypePropertyInfo.PropertyType);
                 generator.Emit(OpCodes.Ldloc, invocationVar);
-                generator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.ReturnValue)).GetMethod);
-                generator.Emit(OpCodes.Callvirt, typeof(WrapperObject).GetProperty(nameof(WrapperObject.Value)).GetMethod);
+                generator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetTypeInfo().GetProperty(nameof(IInvocation.ReturnValue)).GetMethod);
+                generator.Emit(OpCodes.Callvirt, typeof(WrapperObject).GetTypeInfo().GetProperty(nameof(WrapperObject.Value)).GetMethod);
                 if (proxiedTypePropertyInfo.PropertyType.GetTypeInfo().IsValueType)
                 {
                     generator.Emit(OpCodes.Unbox_Any, proxiedTypePropertyInfo.PropertyType);
@@ -104,7 +104,7 @@ namespace Larva.DynamicProxy.Emitters
 
                 // Create interceptors
                 generator.Emit(OpCodes.Ldsfld, interceptorTypesField);
-                generator.Emit(OpCodes.Call, typeof(EmitterHelper).GetMethod(nameof(EmitterHelper.CreateInterceptors), new Type[] { typeof(Type[]) }));
+                generator.Emit(OpCodes.Call, typeof(EmitterHelper).GetTypeInfo().GetMethod(nameof(EmitterHelper.CreateInterceptors), new Type[] { typeof(Type[]) }));
                 generator.Emit(OpCodes.Stloc, interceptorsVar);
 
                 // Newarr argument.
@@ -128,13 +128,13 @@ namespace Larva.DynamicProxy.Emitters
                 // Get proxiedObj's method
                 generator.Emit(OpCodes.Ldtoken, proxiedTypePropertyInfo.SetMethod);
                 generator.Emit(OpCodes.Ldtoken, proxiedTypePropertyInfo.SetMethod.DeclaringType);
-                generator.Emit(OpCodes.Call, typeof(MethodBase).GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
+                generator.Emit(OpCodes.Call, typeof(MethodBase).GetTypeInfo().GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
                 generator.Emit(OpCodes.Stloc, methodInvocationTargetVar);
 
                 // Get proxy's method
                 generator.Emit(OpCodes.Ldtoken, setMethod);
                 generator.Emit(OpCodes.Ldtoken, setMethod.DeclaringType);
-                generator.Emit(OpCodes.Call, typeof(MethodBase).GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
+                generator.Emit(OpCodes.Call, typeof(MethodBase).GetTypeInfo().GetMethod(nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) }));
                 generator.Emit(OpCodes.Stloc, methodVar);
 
                 // Newobj DefaultInvocation
@@ -147,12 +147,12 @@ namespace Larva.DynamicProxy.Emitters
                 generator.Emit(OpCodes.Ldloc, methodInvocationTargetVar);
                 generator.Emit(OpCodes.Ldarg_0);
                 generator.Emit(OpCodes.Ldloc, methodVar);
-                generator.Emit(OpCodes.Newobj, typeof(DefaultInvocation).GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(MemberTypes), typeof(string), typeof(MemberOperateTypes), typeof(object[]), typeof(object), typeof(MethodInfo), typeof(object), typeof(MethodInfo) }));
+                generator.Emit(OpCodes.Newobj, typeof(DefaultInvocation).GetTypeInfo().GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(MemberTypes), typeof(string), typeof(MemberOperateTypes), typeof(object[]), typeof(object), typeof(MethodInfo), typeof(object), typeof(MethodInfo) }));
                 generator.Emit(OpCodes.Stloc, invocationVar);
 
                 // invocation.Proceed
                 generator.Emit(OpCodes.Ldloc, invocationVar);
-                generator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetMethod(nameof(IInvocation.Proceed)));
+                generator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetTypeInfo().GetMethod(nameof(IInvocation.Proceed)));
 
                 generator.Emit(OpCodes.Ret);
                 property.SetSetMethod(setMethod);

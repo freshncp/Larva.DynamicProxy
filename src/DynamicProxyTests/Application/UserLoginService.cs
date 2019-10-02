@@ -1,4 +1,5 @@
 ﻿using DynamicProxyTests.Repositories;
+using System.Threading.Tasks;
 
 namespace DynamicProxyTests.Application
 {
@@ -14,6 +15,11 @@ namespace DynamicProxyTests.Application
         public bool Login(string userName, string password)
         {
             return _userLoginRepository.Validate(userName, password);
+        }
+
+        public async Task<bool> LoginAsync(string userName, string password)
+        {
+            return await _userLoginRepository.ValidateAsync(userName, password);
         }
     }
 }

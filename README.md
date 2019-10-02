@@ -5,7 +5,9 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 
 - 基于类型，返回指定接口的代理类，此代理类拥有原始类Public的构造函数；
 
-- 通过实现 IInvocation 接口，并将其实现类的类型作为参数传入创建代理或代理类，即可实现AOP。
+- 通过实现 IInvocation 接口，并将其实现类的类型作为参数传入创建代理或代理类，即可实现AOP；
+
+- StandardInterceptor 支持拦截Task异步方法。
 
 
 ## 安装Nuget包
@@ -20,6 +22,8 @@ Install-Package Larva.DynamicProxy
 public interface IUserLoginRepository
 {
     bool Validate(string userName, string password);
+
+    Task<bool> ValidateAsync(string userName, string password);
 }
 
 public class UserLoginRepository : IUserLoginRepository
@@ -29,11 +33,21 @@ public class UserLoginRepository : IUserLoginRepository
         //TODO: validate
         return true;
     }
+
+    public async Task<bool> ValidateAsync(string userName, string password)
+    {
+        //TODO: validate
+        await Task.Delay(1000);
+        Console.WriteLine($"validate: {true}");
+        return true;
+    }
 }
 
 public interface IUserLoginService
 {
     bool Login(string userName, string password);
+
+    Task<bool> LoginAsync(string userName, string password);
 }
 
 public class UserLoginService : IUserLoginService
@@ -49,31 +63,27 @@ public class UserLoginService : IUserLoginService
     {
         return _userLoginRepository.Validate(userName, password);
     }
+
+    public async Task<bool> LoginAsync(string userName, string password)
+    {
+        return await _userLoginRepository.ValidateAsync(userName, password);
+    }
 }
 
-// 定义Interceptor，用于拦截Method、Property
-public class UserLoginCounterInterceptor : Larva.DynamicProxy.StandardInterceptor
+// 定义Interceptor，用于性能计数
+public class PerformanceCounterInterceptor : Larva.DynamicProxy.StandardInterceptor
 {
-    private static ConcurrentDictionary<string, long> _counter = new ConcurrentDictionary<string, long>();
-
-    // 执行前
+    private Stopwatch _sw = new Stopwatch();
     protected override void PreProceed(Larva.DynamicProxy.IInvocation invocation)
     {
-        base.PreProceed(invocation);
+        _sw.Start();
     }
 
-    // 执行后
     protected override void PostProceed(Larva.DynamicProxy.IInvocation invocation)
     {
-        if (invocation.InvocationTarget is IUserLoginService
-            && invocation.MethodInvocationTarget.Name == nameof(IUserLoginService.Login))
-        {
-            var userName = (string)invocation.Arguments[0];
-            _counter.TryAdd(userName, 0);
-            _counter.AddOrUpdate(userName, 0, (key, originVal) => System.Threading.Interlocked.Increment(ref originVal));
-            Console.WriteLine($"{userName} has login {_counter[userName]} times");
-        }
-        base.PostProceed(invocation);
+        _sw.Stop();
+        var elapsedMilliseconds = _sw.ElapsedMilliseconds;
+        Console.WriteLine($"{invocation.MethodInvocationTarget.DeclaringType.FullName}.{invocation.MethodInvocationTarget.Name} elapsed {elapsedMilliseconds}ms.");
     }
 }
 
@@ -92,27 +102,29 @@ public class ExampleInterceptor : Larva.DynamicProxy.IInterceptor
 var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
     new UserLoginService(new UserLoginRepository()),
     new Type[] {
-        typeof(UserLoginCounterInterceptor)
+        typeof(PerformanceCounterInterceptor)
     });
 userLoginService.Login("jack", "123456");
-userLoginService.Login("rose", "123456");
+userLoginService.LoginAsync("rose", "123456")
+    .ConfigureAwait(false).GetAwaiter().GetResult();
 
 // 基于对象创建代理对象
 var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(
     typeof(IUserLoginService),
     new UserLoginService(new UserLoginRepository()),
     new Type[] {
-        typeof(UserLoginCounterInterceptor)
+        typeof(PerformanceCounterInterceptor)
     });
 userLoginService.Login("jack", "123456");
-userLoginService.Login("rose", "123456");
+userLoginService.LoginAsync("rose", "123456")
+    .ConfigureAwait(false).GetAwaiter().GetResult();
 
 // 基于类型创建代理类，代理类拥有和原始类相同的Public的构造函数
 var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
     typeof(IUserLoginService),
     typeof(UserLoginService),
     new Type[] {
-        typeof(UserLoginCounterInterceptor)
+        typeof(PerformanceCounterInterceptor)
     });
 var userLoginService = (IUserLoginService)Activator.CreateInstance(
     userLoginServiceType,
@@ -120,10 +132,17 @@ var userLoginService = (IUserLoginService)Activator.CreateInstance(
         new UserLoginRepository()
     });
 userLoginService.Login("jack", "123456");
-userLoginService.Login("rose", "123456");
+userLoginService.LoginAsync("rose", "123456")
+    .ConfigureAwait(false).GetAwaiter().GetResult();
 ```
 
 ## 更新历史
+
+### 1.0.3 (更新日期：2019/10/02)
+
+```plain
+1）StandardInterceptor 支持拦截Task异步方法。
+```
 
 ### 1.0.0 (更新日期：2019/10/01)
 

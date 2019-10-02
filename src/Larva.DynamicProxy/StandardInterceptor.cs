@@ -1,25 +1,43 @@
+using System;
+using System.Reflection;
+using System.Threading.Tasks;
+
 namespace Larva.DynamicProxy
 {
-    public class StandardInterceptor : IInterceptor
+    public abstract class StandardInterceptor : IInterceptor, IDisposable
     {
         public void Intercept(IInvocation invocation)
         {
             PreProceed(invocation);
-            PerformProceed(invocation);
-            PostProceed(invocation);
+            try
+            {
+                invocation.Proceed();
+                if (typeof(Task).GetTypeInfo().IsAssignableFrom(invocation.MethodInvocationTarget.ReturnType)
+                    && invocation.ReturnValue.HasValue)
+                {
+                    ((Task)invocation.ReturnValue.Value).ContinueWith((lastTask, state) =>
+                    {
+                        PostProceed((IInvocation)state);
+                    }, invocation);
+                }
+                else
+                {
+                    PostProceed(invocation);
+                }
+            }
+            finally
+            {
+                Dispose();
+            }
         }
 
-        protected virtual void PerformProceed(IInvocation invocation)
-        {
-            invocation.Proceed();
-        }
+        protected abstract void PreProceed(IInvocation invocation);
 
-        protected virtual void PreProceed(IInvocation invocation)
-        {
-        }
+        protected abstract void PostProceed(IInvocation invocation);
 
-        protected virtual void PostProceed(IInvocation invocation)
+        public virtual void Dispose()
         {
+            
         }
     }
 }
