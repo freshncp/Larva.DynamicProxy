@@ -14,11 +14,13 @@ namespace DynamicProxyTests
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
                 new Type[] {
-                    typeof(UserLoginCounterInterceptor)
+                    typeof(UserLoginCounterInterceptor),
+                    typeof(PerformanceCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
             userLoginService.Login("jack", "123456");
-            userLoginService.Login("rose", "123456");
+            userLoginService.LoginAsync("rose", "123456")
+                .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         [Fact]
@@ -28,11 +30,13 @@ namespace DynamicProxyTests
                 typeof(IUserLoginService),
                 new UserLoginService(new UserLoginRepository()),
                 new Type[] {
-                    typeof(UserLoginCounterInterceptor)
+                    typeof(UserLoginCounterInterceptor),
+                    typeof(PerformanceCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
             userLoginService.Login("jack", "123456");
-            userLoginService.Login("rose", "123456");
+            userLoginService.LoginAsync("rose", "123456")
+                .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         [Fact]
@@ -42,7 +46,8 @@ namespace DynamicProxyTests
                 typeof(IUserLoginService),
                 typeof(UserLoginService),
                 new Type[] {
-                    typeof(UserLoginCounterInterceptor)
+                    typeof(UserLoginCounterInterceptor),
+                    typeof(PerformanceCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByNewObj", userLoginServiceType.Name);
             var userLoginService = (IUserLoginService)Activator.CreateInstance(
@@ -51,7 +56,8 @@ namespace DynamicProxyTests
                     new UserLoginRepository()
                 });
             userLoginService.Login("jack", "123456");
-            userLoginService.Login("rose", "123456");
+            userLoginService.LoginAsync("rose", "123456")
+                .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         [Fact]
@@ -62,7 +68,8 @@ namespace DynamicProxyTests
                     typeof(IUserLoginService),
                     typeof(AnotherUserLoginService),
                     new Type[] {
-                        typeof(UserLoginCounterInterceptor)
+                        typeof(UserLoginCounterInterceptor),
+                        typeof(PerformanceCounterInterceptor)
                     });
             });
         }

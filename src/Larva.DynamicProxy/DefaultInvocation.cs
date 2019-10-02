@@ -10,7 +10,7 @@ namespace Larva.DynamicProxy
 
         public DefaultInvocation(IInterceptor[] interceptors, MemberTypes memberType, string memberName, MemberOperateTypes memberOperateType, object[] arguments, object invocationTarget, MethodInfo methodInvocationTarget, object proxy, MethodInfo method)
         {
-            if (interceptors != null)
+            if (interceptors != null && interceptors.Length > 0)
             {
                 _interceptors = new Queue<IInterceptor>(interceptors);
             }
@@ -27,7 +27,7 @@ namespace Larva.DynamicProxy
 
         private DefaultInvocation(IInterceptor[] interceptors, MemberTypes memberType, string memberName, MemberOperateTypes memberOperateType, object[] arguments, object invocationTarget, MethodInfo methodInvocationTarget, object proxy, MethodInfo method, WrapperObject returnValue)
         {
-            if (interceptors != null)
+            if (interceptors != null && interceptors.Length > 0)
             {
                 _interceptors = new Queue<IInterceptor>(interceptors);
             }
