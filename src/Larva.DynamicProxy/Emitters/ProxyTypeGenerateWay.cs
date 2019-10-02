@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Larva.DynamicProxy.Emitters
+﻿namespace Larva.DynamicProxy.Emitters
 {
     public enum ProxyTypeGenerateWay
     {

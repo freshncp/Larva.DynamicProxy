@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Larva.DynamicProxy.Emitters;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using Larva.DynamicProxy.Emitters;
 
 namespace Larva.DynamicProxy
 {
