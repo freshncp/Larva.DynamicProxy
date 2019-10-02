@@ -330,5 +330,5 @@ ASALocalRun/
 .mfractor/
 
 # Custom
-nuget/lib/
+nuget/*/lib/
 .vscode/
