@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DynamicProxyTests.Repositories
@@ -9,6 +8,7 @@ namespace DynamicProxyTests.Repositories
         public bool Validate(string userName, string password)
         {
             //TODO: validate
+            // throw new NotSupportedException(nameof(Validate));
             return true;
         }
 
@@ -16,6 +16,7 @@ namespace DynamicProxyTests.Repositories
         {
             //TODO: validate
             await Task.Delay(1000);
+            // throw new NotSupportedException(nameof(ValidateAsync));
             Console.WriteLine($"validate: {true}");
             return true;
         }
