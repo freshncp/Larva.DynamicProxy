@@ -138,7 +138,7 @@ userLoginService.LoginAsync("rose", "123456")
 
 ## 更新历史
 
-### 1.0.3 (更新日期：2019/10/02)
+### 1.0.4 (更新日期：2019/10/02)
 
 ```plain
 1）StandardInterceptor 支持拦截Task异步方法。

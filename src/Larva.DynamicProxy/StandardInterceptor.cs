@@ -7,27 +7,48 @@ namespace Larva.DynamicProxy
     public abstract class StandardInterceptor : IInterceptor, IDisposable
     {
         public void Intercept(IInvocation invocation)
-        {
-            PreProceed(invocation);
-            try
+        {   
+            if (typeof(Task).GetTypeInfo().IsAssignableFrom(invocation.MethodInvocationTarget.ReturnType))
             {
-                invocation.Proceed();
-                if (typeof(Task).GetTypeInfo().IsAssignableFrom(invocation.MethodInvocationTarget.ReturnType)
-                    && invocation.ReturnValue.HasValue)
+                try
+                {
+                    PreProceed(invocation);
+                    invocation.Proceed();
+                    if (!invocation.ReturnValue.HasValue)
+                    {
+                        PostProceed(invocation);
+                    }
+                }
+                finally
+                {
+                    Dispose();
+                }
+                if (invocation.ReturnValue.HasValue)
                 {
                     ((Task)invocation.ReturnValue.Value).ContinueWith((lastTask, state) =>
                     {
-                        PostProceed((IInvocation)state);
-                    }, invocation);
-                }
-                else
-                {
-                    PostProceed(invocation);
+                        if (lastTask.Exception == null)
+                        {
+                            PostProceed((IInvocation)state);
+                        }
+                    }, invocation).ContinueWith((lastTask) =>
+                    {
+                        Dispose();
+                    });
                 }
             }
-            finally
+            else
             {
-                Dispose();
+                try
+                {
+                    PreProceed(invocation);
+                    invocation.Proceed();
+                    PostProceed(invocation);
+                }
+                finally
+                {
+                    Dispose();
+                }
             }
         }
 
