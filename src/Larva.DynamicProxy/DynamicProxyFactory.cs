@@ -42,13 +42,13 @@ namespace Larva.DynamicProxy
                 {
                     ProxyTypeByNewObj = new ProxyTypeGenerator(moduleBuilder, interfaceType, proxiedType, ProxyTypeGenerateWay.ByNewObj).Generate(),
                     ProxyTypeByInstance = new ProxyTypeGenerator(moduleBuilder, interfaceType, proxiedType, ProxyTypeGenerateWay.ByInstance).Generate(),
-                    InterceptorTypes = interceptorTypes == null ? null : interceptorTypes.Where(i => typeof(IInterceptor).IsAssignableFrom(i)).Distinct().ToArray()
+                    InterceptorTypes = interceptorTypes == null ? null : interceptorTypes.Where(i => typeof(IInterceptor).GetTypeInfo().IsAssignableFrom(i)).Distinct().ToArray()
                 };
             }, (t, originVal) =>
             {
                 if (interceptorTypes != null)
                 {
-                    interceptorTypes = interceptorTypes.Where(i => typeof(IInterceptor).IsAssignableFrom(i)).ToArray();
+                    interceptorTypes = interceptorTypes.Where(i => typeof(IInterceptor).GetTypeInfo().IsAssignableFrom(i)).ToArray();
                     List<Type> interceptorTypeList = new List<Type>(interceptorTypes);
                     if (_proxyTypeDics[key].InterceptorTypes != null)
                     {
@@ -58,8 +58,8 @@ namespace Larva.DynamicProxy
                 }
                 return originVal;
             });
-            proxyType.ProxyTypeByNewObj.GetField(Consts.INTERCEPTOR_TYPES_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.InterceptorTypes);
-            proxyType.ProxyTypeByInstance.GetField(Consts.INTERCEPTOR_TYPES_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.InterceptorTypes);
+            proxyType.ProxyTypeByNewObj.GetTypeInfo().GetField(Consts.INTERCEPTOR_TYPES_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.InterceptorTypes);
+            proxyType.ProxyTypeByInstance.GetTypeInfo().GetField(Consts.INTERCEPTOR_TYPES_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.InterceptorTypes);
             return proxyType;
         }
     }

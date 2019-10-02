@@ -75,7 +75,7 @@ namespace Larva.DynamicProxy
                 }
                 catch (Exception ex)
                 {
-                    var ctor = ex.InnerException.GetType().GetConstructor(new Type[] { typeof(string), typeof(Exception) });
+                    var ctor = ex.InnerException.GetType().GetTypeInfo().GetConstructor(new Type[] { typeof(string), typeof(Exception) });
                     if (ctor != null)
                     {
                         throw (Exception)ctor.Invoke(new object[] { ex.InnerException.Message, ex.InnerException });
