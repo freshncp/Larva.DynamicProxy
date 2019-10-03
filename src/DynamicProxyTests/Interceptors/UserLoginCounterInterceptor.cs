@@ -7,6 +7,7 @@ namespace DynamicProxyTests.Interceptors
     public class UserLoginCounterInterceptor : Larva.DynamicProxy.StandardInterceptor
     {
         private static ConcurrentDictionary<string, long> _counter = new ConcurrentDictionary<string, long>();
+        private long _disposeCounter = 0;
 
         protected override void PreProceed(Larva.DynamicProxy.IInvocation invocation)
         {
@@ -29,7 +30,8 @@ namespace DynamicProxyTests.Interceptors
 
         public override void Dispose()
         {
-            Console.WriteLine($"{nameof(UserLoginCounterInterceptor)} disposed");
+            System.Threading.Interlocked.Increment(ref _disposeCounter);
+            Console.WriteLine($"{nameof(UserLoginCounterInterceptor)} disposed {_disposeCounter} times.");
         }
     }
 }
