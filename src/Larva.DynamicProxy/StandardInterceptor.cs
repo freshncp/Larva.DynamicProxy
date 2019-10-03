@@ -10,10 +10,12 @@ namespace Larva.DynamicProxy
         {   
             if (typeof(Task).GetTypeInfo().IsAssignableFrom(invocation.MethodInvocationTarget.ReturnType))
             {
+                var isFailBeforePostProceed = true;
                 try
                 {
                     PreProceed(invocation);
                     invocation.Proceed();
+                    isFailBeforePostProceed = false;
                     if (!invocation.ReturnValue.HasValue)
                     {
                         PostProceed(invocation);
@@ -21,9 +23,14 @@ namespace Larva.DynamicProxy
                 }
                 finally
                 {
-                    Dispose();
+                    if (isFailBeforePostProceed
+                        || !invocation.ReturnValue.HasValue)
+                    {
+                        Dispose();
+                    }
                 }
-                if (invocation.ReturnValue.HasValue)
+                if (!isFailBeforePostProceed
+                    && invocation.ReturnValue.HasValue)
                 {
                     ((Task)invocation.ReturnValue.Value).ContinueWith((lastTask, state) =>
                     {

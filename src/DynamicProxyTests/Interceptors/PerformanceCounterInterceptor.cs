@@ -6,6 +6,8 @@ namespace DynamicProxyTests.Interceptors
     public class PerformanceCounterInterceptor : Larva.DynamicProxy.StandardInterceptor
     {
         private Stopwatch _sw = new Stopwatch();
+        private long _disposeCounter = 0;
+
         protected override void PreProceed(Larva.DynamicProxy.IInvocation invocation)
         {
             _sw.Start();
@@ -20,7 +22,8 @@ namespace DynamicProxyTests.Interceptors
 
         public override void Dispose()
         {
-            Console.WriteLine($"{nameof(PerformanceCounterInterceptor)} disposed");
+            System.Threading.Interlocked.Increment(ref _disposeCounter);
+            Console.WriteLine($"{nameof(PerformanceCounterInterceptor)} disposed {_disposeCounter} times.");
         }
     }
 }

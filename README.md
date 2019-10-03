@@ -138,10 +138,35 @@ userLoginService.LoginAsync("rose", "123456")
 
 ## 更新历史
 
+### 1.0.5 (更新日期：2019/10/03)
+
+```plain
+1）StandardInterceptor 修复在异步环境下Dispose方法多一次提前执行的bug；
+2）StandardInterceptor 修复在异步环境下PreProceed出错时会继续执行PostProceed的bug。
+```
+
 ### 1.0.4 (更新日期：2019/10/02)
 
 ```plain
+1）StandardInterceptor 修复在异步方法上执行出错时，仍继续执行PostProceed的bug。
+```
+
+### 1.0.3 (更新日期：2019/10/02)
+
+```plain
 1）StandardInterceptor 支持拦截Task异步方法。
+```
+
+### 1.0.2 (更新日期：2019/10/02)
+
+```plain
+1）增加支持Standard1.6。
+```
+
+### 1.0.1 (更新日期：2019/10/02)
+
+```plain
+1）重新打nuget包。
 ```
 
 ### 1.0.0 (更新日期：2019/10/01)
