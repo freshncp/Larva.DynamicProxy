@@ -17,6 +17,8 @@ namespace DynamicProxyTests.Interceptors
         protected override void PostProceed(Larva.DynamicProxy.IInvocation invocation)
         {
             if (invocation.InvocationTarget is IUserLoginService
+                && invocation.MemberType == System.Reflection.MemberTypes.Method
+                && invocation.MemberOperateType == Larva.DynamicProxy.MemberOperateTypes.None
                 && (invocation.MethodInvocationTarget.Name == nameof(IUserLoginService.Login)
                     || invocation.MethodInvocationTarget.Name == nameof(IUserLoginService.LoginAsync)))
             {
