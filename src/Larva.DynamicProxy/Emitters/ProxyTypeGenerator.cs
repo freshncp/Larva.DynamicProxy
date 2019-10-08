@@ -141,6 +141,9 @@ namespace Larva.DynamicProxy.Emitters
                 {
                     propertyMethodList.Add(interfacePropertyInfo.SetMethod);
                 }
+#if DEBUG
+                Console.WriteLine($"Property: {interfacePropertyInfo.PropertyType.Name} {interfacePropertyInfo.Name}");
+#endif
                 new ProxyPropertyEmitter(this).Emit(proxiedType.GetTypeInfo().GetProperty(interfacePropertyInfo.Name, interfacePropertyInfo.PropertyType, interfacePropertyInfo.GetIndexParameters().Select(p => p.ParameterType).ToArray()));
             }
             return propertyMethodList;
@@ -164,6 +167,9 @@ namespace Larva.DynamicProxy.Emitters
                             baseType = baseType.GetTypeInfo().BaseType;
                         }
                     }
+#if DEBUG
+                    Console.WriteLine($"Method: {methodInfo.ReturnType.Name} {methodInfo.Name}({string.Join(", ", methodInfo.GetParameters().Select(s => $"{s.ParameterType.Name} {s.Name}"))})");
+#endif
                     new ProxyMethodEmitter(this).Emit(methodInfo);
                 }
             }
