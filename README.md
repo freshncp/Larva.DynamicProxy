@@ -9,6 +9,13 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 
 - StandardInterceptor 支持拦截Task异步方法。
 
+## 兼容性
+
+- netstandard  1.6
+
+- netstandard 2.0
+
+- dotNetFramework 4.5 及以上
 
 ## 安装Nuget包
 
@@ -23,6 +30,12 @@ dotnet add package Larva.DynamicProxy
 示例参见：[DynamicProxyTests](https://github.com/freshncp/Larva.DynamicProxy/tree/master/src/DynamicProxyTests)
 
 ## 更新历史
+
+### 1.0.6 (更新日期：2019/10/13)
+
+```plain
+1）支持dotNetFramework4.5及以上版本
+```
 
 ### 1.0.5 (更新日期：2019/10/03)
 
