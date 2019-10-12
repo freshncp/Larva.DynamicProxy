@@ -17,8 +17,6 @@
     <tags>dynamic proxy aop ioc</tags>
     <dependencies>
       <group targetFramework=".NETFramework4.5" />
-      <group targetFramework=".NETFramework4.6" />
-      <group targetFramework=".NETFramework4.7" />
       <group targetFramework=".NETStandard1.6">
         <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
         <dependency id="System.Reflection.Emit" version="4.3.0" exclude="Build,Analyzers" />
