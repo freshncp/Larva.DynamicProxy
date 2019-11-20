@@ -14,8 +14,4 @@ jobs:
       with:
         dotnet-version: 2.2.108
     - name: test
-      run: make test
-    - name: build
-      run: make rebuild
-    - name: pack
-      run: make pack
+      run: dotnet test src/DynamicProxyTests/ test
