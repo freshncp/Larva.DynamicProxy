@@ -6,7 +6,7 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' OR '$(TargetFramework)' == 'netstandard2.0' ">
     <NoStdLib>true</NoStdLib>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)'=='netstandard1.6' OR '$(TargetFramework)'=='netstandard2.0'">
+  <ItemGroup Condition=" '$(TargetFramework)'=='netstandard1.6' OR '$(TargetFramework)'=='netstandard2.0' ">
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
 </Project>
