@@ -18,8 +18,8 @@ namespace Larva.DynamicProxy.Emitters
         public void Emit(MemberInfo memberInfo)
         {
             var proxiedTypeMethodInfo = memberInfo as MethodInfo;
-            Type[] paramTypes = proxiedTypeMethodInfo.GetParameters().Select(m => m.ParameterType).ToArray();
-            var method = _typeGeneratorInfo.Builder.DefineMethod(proxiedTypeMethodInfo.Name, MethodAttributes.Public | MethodAttributes.Virtual, proxiedTypeMethodInfo.ReturnType, paramTypes.ToArray());
+            var parameters = proxiedTypeMethodInfo.GetParameters();
+            var method = _typeGeneratorInfo.Builder.DefineMethod(proxiedTypeMethodInfo.Name, MethodAttributes.Public | MethodAttributes.Virtual, proxiedTypeMethodInfo.ReturnType, parameters.Select(m => m.ParameterType).ToArray());
             if (proxiedTypeMethodInfo.IsGenericMethod)
             {
                 var genericArgs = proxiedTypeMethodInfo.GetGenericArguments();
@@ -34,6 +34,10 @@ namespace Larva.DynamicProxy.Emitters
                     var attrs = genericArgs[i].GetTypeInfo().GenericParameterAttributes;
                     genericParameters[i].SetGenericParameterAttributes(attrs);
                 }
+            }
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                method.DefineParameter(i + 1, parameters[i].Attributes, parameters[i].Name);
             }
             var interceptorTypesField = _typeGeneratorInfo.InterceptorTypesField;
             var proxiedObjField = _typeGeneratorInfo.ProxiedObjField;
@@ -51,16 +55,22 @@ namespace Larva.DynamicProxy.Emitters
             generator.Emit(OpCodes.Stloc, interceptorsVar);
 
             // Newarr argument.
-            generator.Emit(OpCodes.Ldc_I4, paramTypes.Length);
+            generator.Emit(OpCodes.Ldc_I4, parameters.Length);
             generator.Emit(OpCodes.Newarr, typeof(object));
-            for (var i = 0; i < paramTypes.Length; i++)
+            for (var i = 0; i < parameters.Length; i++)
             {
                 generator.Emit(OpCodes.Dup);
                 generator.Emit(OpCodes.Ldc_I4, i);
                 generator.Emit(OpCodes.Ldarg, i + 1);
-                if (paramTypes[i].GetTypeInfo().IsValueType)
+                var unwrappedParameterType = parameters[i].ParameterType;
+                if (parameters[i].ParameterType.IsByRef)
                 {
-                    generator.Emit(OpCodes.Box, paramTypes[i]);
+                    unwrappedParameterType = parameters[i].ParameterType.GetElementType();
+                    generator.Emit(OpCodes.Ldind_Ref);
+                }
+                if (unwrappedParameterType.GetTypeInfo().IsValueType)
+                {
+                    generator.Emit(OpCodes.Box, unwrappedParameterType);
                 }
                 generator.Emit(OpCodes.Stelem_Ref);
             }
@@ -99,6 +109,25 @@ namespace Larva.DynamicProxy.Emitters
             // invocation.Proceed
             generator.Emit(OpCodes.Ldloc, invocationVar);
             generator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetTypeInfo().GetMethod(nameof(IInvocation.Proceed)));
+
+            // assign ref/out parameter
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                if (!parameters[i].ParameterType.IsByRef)
+                {
+                    continue;
+                }
+                var unwrappedParameterType = parameters[i].ParameterType.GetElementType();
+                generator.Emit(OpCodes.Ldarg, i + 1);
+                generator.Emit(OpCodes.Ldloc, argObjArrayVar);
+                generator.Emit(OpCodes.Ldc_I4, i);
+                generator.Emit(OpCodes.Ldelem_Ref);
+                if (unwrappedParameterType.GetTypeInfo().IsValueType)
+                {
+                    generator.Emit(OpCodes.Unbox_Any, unwrappedParameterType);
+                }
+                generator.Emit(OpCodes.Stind_Ref);
+            }
 
             if (proxiedTypeMethodInfo.ReturnType != typeof(void))
             {

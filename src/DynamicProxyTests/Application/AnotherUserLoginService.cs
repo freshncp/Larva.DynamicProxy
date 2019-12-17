@@ -9,8 +9,11 @@ namespace DynamicProxyTests.Application
         {
         }
 
-        public bool Login(string userName, string password)
+        public bool Login(string userName, string password, out bool accountExists, ref int retryCount, out UserDto userDto)
         {
+            accountExists = true;
+            ++retryCount;
+            userDto = null;
             return true;
         }
 

@@ -31,6 +31,12 @@ dotnet add package Larva.DynamicProxy
 
 ## 更新历史
 
+### 1.0.7 (更新日期：2019/12/17)
+
+```plain
+1）修复方法包含out/ref参数时，报错的问题
+```
+
 ### 1.0.6 (更新日期：2019/10/13)
 
 ```plain

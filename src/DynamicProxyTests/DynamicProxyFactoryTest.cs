@@ -18,7 +18,8 @@ namespace DynamicProxyTests
                     typeof(PerformanceCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
-            userLoginService.Login("jack", "123456");
+            int retryCount = 1;
+            userLoginService.Login("jack", "123456", out bool accountExists, ref retryCount, out UserDto userDto);
             userLoginService.LoginAsync("rose", "123456")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -34,7 +35,8 @@ namespace DynamicProxyTests
                     typeof(PerformanceCounterInterceptor)
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
-            userLoginService.Login("jack", "123456");
+            int retryCount = 1;
+            userLoginService.Login("jack", "123456", out bool accountExists, ref retryCount, out UserDto userDto);
             userLoginService.LoginAsync("rose", "123456")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -55,7 +57,8 @@ namespace DynamicProxyTests
                 new object[] {
                     new UserLoginRepository()
                 });
-            userLoginService.Login("jack", "123456");
+            int retryCount = 1;
+            userLoginService.Login("jack", "123456", out bool accountExists, ref retryCount, out UserDto userDto);
             userLoginService.LoginAsync("rose", "123456")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
