@@ -1,4 +1,5 @@
 # Larva.DynamicProxy
+
 dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅支持通过实现接口来创建代理类。
 
 - 基于对象，返回指定接口的代理类对象，此代理类引用原始对象；
@@ -9,27 +10,24 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 
 - StandardInterceptor 支持拦截Task异步方法。
 
-## 兼容性
+## 安装
 
-- netstandard  1.6
-
-- netstandard 2.0
-
-- dotNetFramework 4.5 及以上
-
-## 安装Nuget包
-
-```
-Install-Package Larva.DynamicProxy
-或
+```sh
 dotnet add package Larva.DynamicProxy
 ```
 
 ## 调用示例
 
-示例参见：[DynamicProxyTests](https://github.com/freshncp/Larva.DynamicProxy/tree/master/src/DynamicProxyTests)
+示例参见：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
 
 ## 更新历史
+
+### 2.0.0-beta1 (更新日期：2020/06/14)
+
+```plain
+1）重构，取消反射调用，改为委托调用；
+2）拦截器，由类型改为对象传入。
+```
 
 ### 1.0.7 (更新日期：2019/12/17)
 

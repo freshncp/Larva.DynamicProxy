@@ -4,15 +4,26 @@ using System.Reflection.Emit;
 
 namespace Larva.DynamicProxy.Emitters
 {
+    /// <summary>
+    /// 代理类事件 IL生成器
+    /// </summary>
     public sealed class ProxyEventEmitter : IMemberEmitter
     {
         private IProxyTypeGeneratorInfo _typeGeneratorInfo;
 
+        /// <summary>
+        /// 代理类事件 IL生成器
+        /// </summary>
+        /// <param name="typeGeneratorInfo"></param>
         public ProxyEventEmitter(IProxyTypeGeneratorInfo typeGeneratorInfo)
         {
             _typeGeneratorInfo = typeGeneratorInfo;
         }
-        
+
+        /// <summary>
+        /// 生成
+        /// </summary>
+        /// <param name="memberInfo"></param>
         public void Emit(MemberInfo memberInfo)
         {
             var proxiedTypeEventInfo = memberInfo as EventInfo;

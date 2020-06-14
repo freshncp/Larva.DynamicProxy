@@ -5,15 +5,26 @@ using System.Reflection.Emit;
 
 namespace Larva.DynamicProxy.Emitters
 {
+    /// <summary>
+    /// 代理类构造函数 IL生成器
+    /// </summary>
     public sealed class ProxyConstructorEmitter : IMemberEmitter
     {
         private IProxyTypeGeneratorInfo _typeGeneratorInfo;
 
+        /// <summary>
+        /// 代理构造函数 IL生成器
+        /// </summary>
+        /// <param name="typeGeneratorInfo"></param>
         public ProxyConstructorEmitter(IProxyTypeGeneratorInfo typeGeneratorInfo)
         {
             _typeGeneratorInfo = typeGeneratorInfo;
         }
 
+        /// <summary>
+        /// 生成
+        /// </summary>
+        /// <param name="memberInfo"></param>
         public void Emit(MemberInfo memberInfo)
         {
             if (memberInfo == null)

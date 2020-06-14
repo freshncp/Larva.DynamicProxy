@@ -1,14 +1,14 @@
 using System;
 using System.Threading.Tasks;
 
-namespace DynamicProxyTests.Repositories
+namespace Larva.DynamicProxy.Tests.Repositories
 {
     public class UserLoginRepository : IUserLoginRepository
     {
-        public bool Validate(string userName, string password)
+        public bool Validate(string userName, string password, int sault)
         {
             //TODO: validate
-            // throw new NotSupportedException(nameof(Validate));
+            Console.WriteLine($"userName: {userName}, password: {password}, sault: {sault}, Validate: {true}");
             return true;
         }
 
@@ -16,8 +16,7 @@ namespace DynamicProxyTests.Repositories
         {
             //TODO: validate
             await Task.Delay(1000);
-            // throw new NotSupportedException(nameof(ValidateAsync));
-            Console.WriteLine($"validate: {true}");
+            Console.WriteLine($"userName: {userName}, password: {password}, validateAsync: {true}");
             return true;
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace DynamicProxyTests.Application
+namespace Larva.DynamicProxy.Tests.Application
 {
 
     public class AnotherUserLoginService : IUserLoginService
@@ -9,8 +9,10 @@ namespace DynamicProxyTests.Application
         {
         }
 
-        public bool Login(string userName, string password, out bool accountExists, ref int retryCount, out UserDto userDto)
+        public bool Login(string userName, string password, int sault, out bool accountExists, ref int retryCount, out UserDto userDto)
         {
+            UserName = userName;
+            Sault = sault;
             accountExists = true;
             ++retryCount;
             userDto = null;
@@ -19,7 +21,12 @@ namespace DynamicProxyTests.Application
 
         public Task<bool> LoginAsync(string userName, string password)
         {
+            UserName = userName;
             return Task.FromResult(false);
         }
+
+        public string UserName { get; private set;}
+
+        public int Sault { get; set; }
     }
 }

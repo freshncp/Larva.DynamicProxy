@@ -1,14 +1,20 @@
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Larva.DynamicProxy
 {
+    /// <summary>
+    /// 标准拦截器
+    /// </summary>
     public abstract class StandardInterceptor : IInterceptor, IDisposable
     {
+        /// <summary>
+        /// 拦截
+        /// </summary>
+        /// <param name="invocation">调用</param>
         public void Intercept(IInvocation invocation)
-        {   
-            if (typeof(Task).GetTypeInfo().IsAssignableFrom(invocation.MethodInvocationTarget.ReturnType))
+        {
+            if (typeof(Task).IsAssignableFrom(invocation.ReturnValueType))
             {
                 var isFailBeforePostProceed = true;
                 try
@@ -16,27 +22,59 @@ namespace Larva.DynamicProxy
                     PreProceed(invocation);
                     invocation.Proceed();
                     isFailBeforePostProceed = false;
-                    if (!invocation.ReturnValue.HasValue)
+                    if (invocation.ReturnValue == null)
                     {
-                        PostProceed(invocation);
+                        try
+                        {
+                            PostProceed(invocation);
+                        }
+                        catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        ExceptionThrown(invocation, ex);
+                    }
+                    catch { }
+                    if (ex is AggregateException)
+                    {
+                        throw ex;
+                    }
+                    else
+                    {
+                        throw new AggregateException(ex);
                     }
                 }
                 finally
                 {
                     if (isFailBeforePostProceed
-                        || !invocation.ReturnValue.HasValue)
+                        || invocation.ReturnValue == null)
                     {
                         Dispose();
                     }
                 }
                 if (!isFailBeforePostProceed
-                    && invocation.ReturnValue.HasValue)
+                    && invocation.ReturnValue != null)
                 {
-                    ((Task)invocation.ReturnValue.Value).ContinueWith((lastTask, state) =>
+                    ((Task)invocation.ReturnValue).ContinueWith((lastTask, state) =>
                     {
                         if (lastTask.Exception == null)
                         {
-                            PostProceed((IInvocation)state);
+                            try
+                            {
+                                PostProceed((IInvocation)state);
+                            }
+                            catch { }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                ExceptionThrown((IInvocation)state, lastTask.Exception.InnerExceptions[0]);
+                            }
+                            catch { }
                         }
                     }, invocation).ContinueWith((lastTask) =>
                     {
@@ -50,7 +88,20 @@ namespace Larva.DynamicProxy
                 {
                     PreProceed(invocation);
                     invocation.Proceed();
-                    PostProceed(invocation);
+                    try
+                    {
+                        PostProceed(invocation);
+                    }
+                    catch { }
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        ExceptionThrown(invocation, ex);
+                    }
+                    catch { }
+                    throw new AggregateException(ex);
                 }
                 finally
                 {
@@ -59,13 +110,34 @@ namespace Larva.DynamicProxy
             }
         }
 
+        /// <summary>
+        /// 调用前
+        /// </summary>
+        /// <param name="invocation">调用</param>
         protected abstract void PreProceed(IInvocation invocation);
 
+        /// <summary>
+        /// 调用后
+        /// </summary>
+        /// <param name="invocation">调用</param>
         protected abstract void PostProceed(IInvocation invocation);
 
-        public virtual void Dispose()
+        /// <summary>
+        /// 调用时抛异常
+        /// </summary>
+        /// <param name="invocation">调用</param>
+        /// <param name="exception">异常</param>
+        protected virtual void ExceptionThrown(IInvocation invocation, Exception exception)
         {
             
+        }
+
+        /// <summary>
+        /// 释放
+        /// </summary>
+        public virtual void Dispose()
+        {
+
         }
     }
 }

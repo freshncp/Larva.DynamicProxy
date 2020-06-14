@@ -6,23 +6,33 @@ using System.Reflection.Emit;
 
 namespace Larva.DynamicProxy.Emitters
 {
+    /// <summary>
+    /// 代理类生成器
+    /// </summary>
     public sealed class ProxyTypeGenerator : IProxyTypeGeneratorInfo
     {
         private Type _proxiedInterfaceType;
         private Type _cachedType;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="moduleBuilder"></param>
+        /// <param name="proxiedInterfaceType"></param>
+        /// <param name="proxiedType"></param>
+        /// <param name="way"></param>
         public ProxyTypeGenerator(ModuleBuilder moduleBuilder, Type proxiedInterfaceType, Type proxiedType, ProxyTypeGenerateWay way)
         {
-            if (!proxiedInterfaceType.GetTypeInfo().IsInterface)
+            if (!proxiedInterfaceType.IsInterface)
             {
                 throw new InvalidProxiedInterfaceTypeException($"Unable to cast object of type '{proxiedType}' to type '{proxiedInterfaceType}");
             }
-            if (!proxiedInterfaceType.GetTypeInfo().IsAssignableFrom(proxiedType))
+            if (!proxiedInterfaceType.IsAssignableFrom(proxiedType))
             {
                 throw new InvalidCastException($"Unable to cast object of type '{proxiedType}' to type '{proxiedInterfaceType}");
             }
             if (way == ProxyTypeGenerateWay.ByNewObj
-                && proxiedType.GetTypeInfo().GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.CreateInstance).Length == 0)
+                && proxiedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.CreateInstance).Length == 0)
             {
                 throw new InvalidProxiedTypeException($"Type {proxiedType} that no public constructor in, cann't use '{nameof(ProxyTypeGenerateWay)}.{ProxyTypeGenerateWay.ByNewObj}'");
             }
@@ -35,19 +45,38 @@ namespace Larva.DynamicProxy.Emitters
             Way = way;
 
             ProxiedObjField = Builder.DefineField("_proxiedObj", proxiedInterfaceType, FieldAttributes.Private);
-            InterceptorTypesField = Builder.DefineField(Consts.INTERCEPTOR_TYPES_FIELD_NAME, typeof(Type[]), FieldAttributes.Public | FieldAttributes.Static);
+            InterceptorsField = Builder.DefineField(Consts.INTERCEPTORS_FIELD_NAME, typeof(IInterceptor[]), FieldAttributes.Public | FieldAttributes.Static);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Type ProxiedType { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public TypeBuilder Builder { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public ProxyTypeGenerateWay Way { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public FieldBuilder ProxiedObjField { get; private set; }
 
-        public FieldBuilder InterceptorTypesField { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public FieldBuilder InterceptorsField { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public Type Generate()
         {
             if (_cachedType == null)
@@ -55,7 +84,7 @@ namespace Larva.DynamicProxy.Emitters
                 // constructor
                 if (Way == ProxyTypeGenerateWay.ByNewObj)
                 {
-                    var cctors = ProxiedType.GetTypeInfo().GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.CreateInstance);
+                    var cctors = ProxiedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.CreateInstance);
                     foreach (var cctor in cctors)
                     {
                         new ProxyConstructorEmitter(this).Emit(cctor);
@@ -67,7 +96,7 @@ namespace Larva.DynamicProxy.Emitters
                 }
 
                 AddMethods(_proxiedInterfaceType, ProxiedType, AddEvents(_proxiedInterfaceType, ProxiedType), AddProperties(_proxiedInterfaceType, ProxiedType));
-                foreach (var interfaceType in _proxiedInterfaceType.GetTypeInfo().GetInterfaces())
+                foreach (var interfaceType in _proxiedInterfaceType.GetInterfaces())
                 {
                     AddMethods(interfaceType, ProxiedType, AddEvents(interfaceType, ProxiedType), AddProperties(interfaceType, ProxiedType));
                 }
@@ -90,7 +119,7 @@ namespace Larva.DynamicProxy.Emitters
                 return false;
             for (var i = 0; i < array1.Length; i++)
             {
-                if (array1[i].GetTypeInfo().IsGenericType && array2[i].GetTypeInfo().IsGenericType)
+                if (array1[i].IsGenericType && array2[i].IsGenericType)
                 {
                     if (!array1[i].GetGenericTypeDefinition().Equals(array2[i].GetGenericTypeDefinition()))
                         return false;
@@ -113,7 +142,7 @@ namespace Larva.DynamicProxy.Emitters
         private List<MethodInfo> AddEvents(Type interfaceType, Type proxiedType)
         {
             var eventMethodList = new List<MethodInfo>();
-            foreach (var interfaceEventInfo in interfaceType.GetTypeInfo().GetEvents())
+            foreach (var interfaceEventInfo in interfaceType.GetEvents())
             {
                 if (interfaceEventInfo.AddMethod != null)
                 {
@@ -123,7 +152,7 @@ namespace Larva.DynamicProxy.Emitters
                 {
                     eventMethodList.Add(interfaceEventInfo.RemoveMethod);
                 }
-                new ProxyEventEmitter(this).Emit(proxiedType.GetTypeInfo().GetEvent(interfaceEventInfo.Name));
+                new ProxyEventEmitter(this).Emit(proxiedType.GetEvent(interfaceEventInfo.Name));
             }
             return eventMethodList;
         }
@@ -131,7 +160,7 @@ namespace Larva.DynamicProxy.Emitters
         private List<MethodInfo> AddProperties(Type interfaceType, Type proxiedType)
         {
             var propertyMethodList = new List<MethodInfo>();
-            foreach (var interfacePropertyInfo in interfaceType.GetTypeInfo().GetProperties())
+            foreach (var interfacePropertyInfo in interfaceType.GetProperties())
             {
                 if (interfacePropertyInfo.CanRead)
                 {
@@ -144,27 +173,27 @@ namespace Larva.DynamicProxy.Emitters
 #if DEBUG
                 Console.WriteLine($"Property: {interfacePropertyInfo.PropertyType.Name} {interfacePropertyInfo.Name}");
 #endif
-                new ProxyPropertyEmitter(this).Emit(proxiedType.GetTypeInfo().GetProperty(interfacePropertyInfo.Name, interfacePropertyInfo.PropertyType, interfacePropertyInfo.GetIndexParameters().Select(p => p.ParameterType).ToArray()));
+                new ProxyPropertyEmitter(this).Emit(proxiedType.GetProperty(interfacePropertyInfo.Name, interfacePropertyInfo.PropertyType, interfacePropertyInfo.GetIndexParameters().Select(p => p.ParameterType).ToArray()));
             }
             return propertyMethodList;
         }
 
         private void AddMethods(Type interfaceType, Type proxiedType, IList<MethodInfo> eventMethodList, IList<MethodInfo> propertyMethodList)
         {
-            foreach (var interfaceMethodInfo in interfaceType.GetTypeInfo().GetMethods())
+            foreach (var interfaceMethodInfo in interfaceType.GetMethods())
             {
                 if (!propertyMethodList.Contains(interfaceMethodInfo)
                     && !eventMethodList.Contains(interfaceMethodInfo))
                 {
-                    var methodInfo = proxiedType.GetTypeInfo().GetMethods().FirstOrDefault(m => IsMethodSignutureEqual(m, interfaceMethodInfo));
+                    var methodInfo = proxiedType.GetMethods().FirstOrDefault(m => IsMethodSignutureEqual(m, interfaceMethodInfo));
                     if (methodInfo == null)
                     {
-                        var baseType = proxiedType.GetTypeInfo().BaseType;
+                        var baseType = proxiedType.BaseType;
                         while (baseType != null)
                         {
-                            methodInfo = baseType.GetTypeInfo().GetMethods().FirstOrDefault(m => IsMethodSignutureEqual(m, interfaceMethodInfo));
+                            methodInfo = baseType.GetMethods().FirstOrDefault(m => IsMethodSignutureEqual(m, interfaceMethodInfo));
                             if (methodInfo != null) break;
-                            baseType = baseType.GetTypeInfo().BaseType;
+                            baseType = baseType.BaseType;
                         }
                     }
 #if DEBUG

@@ -1,12 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.6;netstandard2.0</TargetFrameworks>
-    <ReleaseVersion>1.0.0</ReleaseVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Jerry Bai</Authors>
+    <PackageProjectUrl>https://github.com/freshncp/Larva.DynamicProxy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/freshncp/Larva.DynamicProxy.git</RepositoryUrl>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Larva.DynamicProxy</PackageId>
+    <Title>Larva.DynamicProxy</Title>
+    <Version>2.0.0-beta1</Version>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <PackageTags>dynamic-proxy proxy aop ioc interceptor interception</PackageTags>
+    <Description>dotnet 动态代理类，用于AOP</Description>
+    <PackageIcon>_content\package.png</PackageIcon>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <ContentTargetFolders>_content</ContentTargetFolders>
+    <PackageReleaseNotes>https://github.com/freshncp/Larva.DynamicProxy
+    </PackageReleaseNotes>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' OR '$(TargetFramework)' == 'netstandard2.0' ">
-    <NoStdLib>true</NoStdLib>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)'=='netstandard1.6' OR '$(TargetFramework)'=='netstandard2.0' ">
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+
+  <ItemGroup>
+    <Content Include="..\..\package.png">
+      <Link>_content\package.png</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
   </ItemGroup>
 </Project>
