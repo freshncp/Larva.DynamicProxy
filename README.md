@@ -16,11 +16,11 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 dotnet add package Larva.DynamicProxy
 ```
 
-## 调用示例
+## 使用
 
 示例参见：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
 
-## 更新历史
+## 发布历史
 
 ### 2.0.0-beta1 (更新日期：2020/06/14)
 
