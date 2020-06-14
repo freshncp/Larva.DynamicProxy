@@ -8,28 +8,52 @@ using System.Reflection.Emit;
 
 namespace Larva.DynamicProxy
 {
+    /// <summary>
+    /// 代理类工厂
+    /// </summary>
     public sealed class DynamicProxyFactory
     {
         private static ConcurrentDictionary<ProxyTypeIdentity, ProxyTypeWrapper> _proxyTypeDics = new ConcurrentDictionary<ProxyTypeIdentity, ProxyTypeWrapper>();
 
-        public static object CreateProxy(Type interfaceType, object proxiedObj, Type[] interceptorTypes)
+        /// <summary>
+        /// 创建代理
+        /// </summary>
+        /// <param name="interfaceType"></param>
+        /// <param name="proxiedObj"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static object CreateProxy(Type interfaceType, object proxiedObj, IInterceptor[] interceptors)
         {
-            var proxyType = InternalCreateProxyType(interfaceType, proxiedObj.GetType(), interceptorTypes).ProxyTypeByInstance;
+            var proxyType = InternalCreateProxyType(interfaceType, proxiedObj.GetType(), interceptors).ProxyTypeByInstance;
             return Activator.CreateInstance(proxyType, proxiedObj);
         }
 
-        public static TInterface CreateProxy<TInterface>(TInterface proxiedObj, Type[] interceptorTypes)
+        /// <summary>
+        /// 创建代理
+        /// </summary>
+        /// <param name="proxiedObj"></param>
+        /// <param name="interceptors"></param>
+        /// <typeparam name="TInterface"></typeparam>
+        /// <returns></returns>
+        public static TInterface CreateProxy<TInterface>(TInterface proxiedObj, IInterceptor[] interceptors)
             where TInterface : class
         {
-            return (TInterface)CreateProxy(typeof(TInterface), proxiedObj, interceptorTypes);
+            return (TInterface)CreateProxy(typeof(TInterface), proxiedObj, interceptors);
         }
 
-        public static Type CreateProxyType(Type interfaceType, Type proxiedType, Type[] interceptorTypes)
+        /// <summary>
+        /// 创建代理类
+        /// </summary>
+        /// <param name="interfaceType"></param>
+        /// <param name="proxiedType"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static Type CreateProxyType(Type interfaceType, Type proxiedType, IInterceptor[] interceptors)
         {
-            return InternalCreateProxyType(interfaceType, proxiedType, interceptorTypes).ProxyTypeByNewObj;
+            return InternalCreateProxyType(interfaceType, proxiedType, interceptors).ProxyTypeByNewObj;
         }
 
-        internal static ProxyTypeWrapper InternalCreateProxyType(Type interfaceType, Type proxiedType, Type[] interceptorTypes)
+        internal static ProxyTypeWrapper InternalCreateProxyType(Type interfaceType, Type proxiedType, IInterceptor[] interceptors)
         {
             var key = new ProxyTypeIdentity(interfaceType, proxiedType);
             var proxyType = _proxyTypeDics.AddOrUpdate(key, t =>
@@ -42,24 +66,23 @@ namespace Larva.DynamicProxy
                 {
                     ProxyTypeByNewObj = new ProxyTypeGenerator(moduleBuilder, interfaceType, proxiedType, ProxyTypeGenerateWay.ByNewObj).Generate(),
                     ProxyTypeByInstance = new ProxyTypeGenerator(moduleBuilder, interfaceType, proxiedType, ProxyTypeGenerateWay.ByInstance).Generate(),
-                    InterceptorTypes = interceptorTypes == null ? null : interceptorTypes.Where(i => typeof(IInterceptor).GetTypeInfo().IsAssignableFrom(i)).Distinct().ToArray()
+                    Interceptors = interceptors
                 };
             }, (t, originVal) =>
             {
-                if (interceptorTypes != null)
+                if (interceptors != null)
                 {
-                    interceptorTypes = interceptorTypes.Where(i => typeof(IInterceptor).GetTypeInfo().IsAssignableFrom(i)).ToArray();
-                    List<Type> interceptorTypeList = new List<Type>(interceptorTypes);
-                    if (_proxyTypeDics[key].InterceptorTypes != null)
+                    var interceptorList = new List<IInterceptor>(interceptors);
+                    if (_proxyTypeDics[key].Interceptors != null)
                     {
-                        interceptorTypeList.AddRange(_proxyTypeDics[key].InterceptorTypes);
+                        interceptorList.AddRange(_proxyTypeDics[key].Interceptors);
                     }
-                    originVal.InterceptorTypes = interceptorTypeList.Distinct().ToArray();
+                    originVal.Interceptors = interceptorList.Distinct().ToArray();
                 }
                 return originVal;
             });
-            proxyType.ProxyTypeByNewObj.GetTypeInfo().GetField(Consts.INTERCEPTOR_TYPES_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.InterceptorTypes);
-            proxyType.ProxyTypeByInstance.GetTypeInfo().GetField(Consts.INTERCEPTOR_TYPES_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.InterceptorTypes);
+            proxyType.ProxyTypeByNewObj.GetField(Consts.INTERCEPTORS_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.Interceptors);
+            proxyType.ProxyTypeByInstance.GetField(Consts.INTERCEPTORS_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.Interceptors);
             return proxyType;
         }
     }
@@ -70,7 +93,7 @@ namespace Larva.DynamicProxy
 
         public Type ProxyTypeByInstance { get; set; }
 
-        public Type[] InterceptorTypes { get; set; }
+        public IInterceptor[] Interceptors { get; set; }
     }
 
     internal struct ProxyTypeIdentity

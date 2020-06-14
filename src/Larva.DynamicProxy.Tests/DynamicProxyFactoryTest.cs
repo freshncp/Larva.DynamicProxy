@@ -1,10 +1,10 @@
 using System;
-using DynamicProxyTests.Application;
-using DynamicProxyTests.Interceptors;
-using DynamicProxyTests.Repositories;
+using Larva.DynamicProxy.Tests.Application;
+using Larva.DynamicProxy.Tests.Interceptors;
+using Larva.DynamicProxy.Tests.Repositories;
 using Xunit;
 
-namespace DynamicProxyTests
+namespace Larva.DynamicProxy.Tests
 {
     public class DynamicProxyFactoryTest
     {
@@ -13,15 +13,24 @@ namespace DynamicProxyTests
         {
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
-                new Type[] {
-                    typeof(UserLoginCounterInterceptor),
-                    typeof(PerformanceCounterInterceptor)
+                new IInterceptor[] {
+                    new UserLoginCounterInterceptor(),
+                    new PerformanceCounterInterceptor()
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
+
             int retryCount = 1;
-            userLoginService.Login("jack", "123456", out bool accountExists, ref retryCount, out UserDto userDto);
-            userLoginService.LoginAsync("rose", "123456")
+            var result1 = userLoginService.Login("jack", "123456", 996, out bool accountExists, ref retryCount, out UserDto userDto);
+            Assert.True(result1);
+            Assert.True(accountExists);
+            Assert.Equal(2, retryCount);
+            Assert.Equal("jack", userDto.RealName);
+            Assert.Equal("jack", userLoginService.UserName);
+            Assert.Equal(996, userLoginService.Sault);
+
+            var result2 = userLoginService.LoginAsync("rose", "123456")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
+            Assert.True(result2);
         }
 
         [Fact]
@@ -30,13 +39,13 @@ namespace DynamicProxyTests
             var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(
                 typeof(IUserLoginService),
                 new UserLoginService(new UserLoginRepository()),
-                new Type[] {
-                    typeof(UserLoginCounterInterceptor),
-                    typeof(PerformanceCounterInterceptor)
+                new IInterceptor[] {
+                    new UserLoginCounterInterceptor(),
+                    new PerformanceCounterInterceptor()
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
             int retryCount = 1;
-            userLoginService.Login("jack", "123456", out bool accountExists, ref retryCount, out UserDto userDto);
+            userLoginService.Login("jack", "123456", 996, out bool accountExists, ref retryCount, out UserDto userDto);
             userLoginService.LoginAsync("rose", "123456")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -47,9 +56,9 @@ namespace DynamicProxyTests
             var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
                 typeof(IUserLoginService),
                 typeof(UserLoginService),
-                new Type[] {
-                    typeof(UserLoginCounterInterceptor),
-                    typeof(PerformanceCounterInterceptor)
+                new IInterceptor[] {
+                    new UserLoginCounterInterceptor(),
+                    new PerformanceCounterInterceptor()
                 });
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByNewObj", userLoginServiceType.Name);
             var userLoginService = (IUserLoginService)Activator.CreateInstance(
@@ -58,7 +67,7 @@ namespace DynamicProxyTests
                     new UserLoginRepository()
                 });
             int retryCount = 1;
-            userLoginService.Login("jack", "123456", out bool accountExists, ref retryCount, out UserDto userDto);
+            userLoginService.Login("jack", "123456", 996, out bool accountExists, ref retryCount, out UserDto userDto);
             userLoginService.LoginAsync("rose", "123456")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -66,14 +75,15 @@ namespace DynamicProxyTests
         [Fact]
         public void TestCreateProxyTypeWhenNoPublicConstructor()
         {
-            Assert.Throws<Larva.DynamicProxy.InvalidProxiedTypeException>(() => {
+            Assert.Throws<Larva.DynamicProxy.InvalidProxiedTypeException>(() =>
+            {
                 var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
                     typeof(IUserLoginService),
                     typeof(AnotherUserLoginService),
-                    new Type[] {
-                        typeof(UserLoginCounterInterceptor),
-                        typeof(PerformanceCounterInterceptor)
-                    });
+                    new IInterceptor[] {
+                        new UserLoginCounterInterceptor(),
+                        new PerformanceCounterInterceptor()
+                });
             });
         }
     }

@@ -1,30 +1,12 @@
 all: test pack
 test:
-	dotnet test `pwd`/src/DynamicProxyTests/
+	dotnet test `pwd`/src/Larva.DynamicProxy.Tests/
 
-pack: rebuild
-	rm -rf `pwd`/nuget/.DS_Store
-	rm -rf `pwd`/nuget/*/.DS_Store
-	rm -rf `pwd`/nuget/*/*/.DS_Store
-	rm -rf `pwd`/nuget/*/lib/*/*.pdb
-	rm -rf `pwd`/nuget/*/lib/*/*.json
-	nuget pack -OutputDirectory `pwd`/packages/ `pwd`/nuget/Larva.DynamicProxy/Larva.DynamicProxy.nuspec
+pack: build
+	mkdir -p `pwd`/packages
+	dotnet pack -c Release `pwd`/src/Larva.DynamicProxy/
+	mv `pwd`/src/Larva.DynamicProxy/bin/Release/*.nupkg `pwd`/packages/
 
-rebuild: clean build
-
-clean:
-	rm -rf `pwd`/nuget/.DS_Store
-	rm -rf `pwd`/nuget/*/.DS_Store
-	rm -rf `pwd`/nuget/*/*/.DS_Store
-	rm -rf `pwd`/nuget/*/lib/*
-
-build: build-1_6 build-2_0 build-netFramework
-
-build-1_6:
-	dotnet build -c Release -f 'netstandard1.6' -o `pwd`/nuget/Larva.DynamicProxy/lib/netstandard1.6/ `pwd`/src/Larva.DynamicProxy/
-
-build-2_0:
-	dotnet build -c Release -f 'netstandard2.0' -o `pwd`/nuget/Larva.DynamicProxy/lib/netstandard2.0/ `pwd`/src/Larva.DynamicProxy/
-
-build-netFramework:
-	msbuild `pwd`/src/Larva.DynamicProxy/Larva.DynamicProxy.csproj -r -noConLog -t:Rebuild -p:Configuration=Release -p:TargetFramework=net45 -p:OutputPath=`pwd`/nuget/Larva.DynamicProxy/lib/net45/
+build:
+	dotnet build -c Release `pwd`/src/Larva.DynamicProxy/
+	dotnet build -c Release `pwd`/src/Larva.DynamicProxy.Tests/

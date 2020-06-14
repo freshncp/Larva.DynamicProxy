@@ -1,7 +1,7 @@
 ﻿namespace Larva.DynamicProxy.Emitters
 {
-    public class Consts
+    internal class Consts
     {
-        public const string INTERCEPTOR_TYPES_FIELD_NAME = "InterceptorTypes";
+        public const string INTERCEPTORS_FIELD_NAME = "Interceptors";
     }
 }
