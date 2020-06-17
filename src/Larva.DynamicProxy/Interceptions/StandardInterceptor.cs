@@ -87,7 +87,14 @@ namespace Larva.DynamicProxy.Interceptions
                 catch (Exception ex)
                 {
                     EatException(() => ExceptionThrown(invocation, ex));
-                    throw new AggregateException(ex);
+                    if (ex is AggregateException)
+                    {
+                        throw ex;
+                    }
+                    else
+                    {
+                        throw new AggregateException(ex);
+                    }
                 }
                 finally
                 {
