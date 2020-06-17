@@ -26,7 +26,11 @@ namespace Larva.DynamicProxy.Tests.Interceptors
 
         public override void Dispose()
         {
-            _sw.Value = null;
+            if (_sw.Value != null)
+            {
+                _sw.Value.Reset();
+                _sw.Value = null;
+            }
             System.Threading.Interlocked.Increment(ref _disposeCounter);
             Console.WriteLine($"{nameof(PerformanceCounterInterceptor)} disposed {_disposeCounter} times.");
         }
