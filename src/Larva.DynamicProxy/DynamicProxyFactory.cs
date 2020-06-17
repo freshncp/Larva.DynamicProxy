@@ -1,4 +1,5 @@
 ﻿using Larva.DynamicProxy.Emitters;
+using Larva.DynamicProxy.Interceptions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace Larva.DynamicProxy
         /// <param name="proxiedObj"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type interfaceType, object proxiedObj, IInterceptor[] interceptors)
+        public static object CreateProxy(Type interfaceType, object proxiedObj, params IInterceptor[] interceptors)
         {
             var proxyType = InternalCreateProxyType(interfaceType, proxiedObj.GetType(), interceptors).ProxyTypeByInstance;
             return Activator.CreateInstance(proxyType, proxiedObj);
@@ -35,7 +36,7 @@ namespace Larva.DynamicProxy
         /// <param name="interceptors"></param>
         /// <typeparam name="TInterface"></typeparam>
         /// <returns></returns>
-        public static TInterface CreateProxy<TInterface>(TInterface proxiedObj, IInterceptor[] interceptors)
+        public static TInterface CreateProxy<TInterface>(TInterface proxiedObj, params IInterceptor[] interceptors)
             where TInterface : class
         {
             return (TInterface)CreateProxy(typeof(TInterface), proxiedObj, interceptors);
@@ -48,7 +49,7 @@ namespace Larva.DynamicProxy
         /// <param name="proxiedType"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static Type CreateProxyType(Type interfaceType, Type proxiedType, IInterceptor[] interceptors)
+        public static Type CreateProxyType(Type interfaceType, Type proxiedType, params IInterceptor[] interceptors)
         {
             return InternalCreateProxyType(interfaceType, proxiedType, interceptors).ProxyTypeByNewObj;
         }

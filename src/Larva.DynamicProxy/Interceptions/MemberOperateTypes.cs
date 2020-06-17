@@ -1,4 +1,4 @@
-namespace Larva.DynamicProxy
+namespace Larva.DynamicProxy.Interceptions
 {
     /// <summary>
     /// 成员操作类型

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Larva.DynamicProxy.Interceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -39,16 +40,16 @@ namespace Larva.DynamicProxy.Emitters
             var methodFuncGenerator = methodFunc.GetILGenerator();
 
             // 参数列表Copy到局部变量
-            var methodFuncArgumentVarList = new List<LocalBuilder>();
+            var methodFuncArgumentVarList = new LocalBuilder[parameters.Length];
             for (var i = 0; i < parameters.Length; i++)
             {
-                var unwrappedParameterType = parameters[i].ParameterType;
-                if (parameters[i].ParameterType.IsByRef)
+                if (!parameters[i].ParameterType.IsByRef)
                 {
-                    unwrappedParameterType = parameters[i].ParameterType.GetElementType();
+                    continue;
                 }
-                methodFuncGenerator.Emit(OpCodes.Ldarg_1);
-                methodFuncGenerator.Emit(OpCodes.Ldc_I4, i);
+                var unwrappedParameterType = parameters[i].ParameterType.GetElementType();
+                methodFuncGenerator.Ldarg(1);
+                methodFuncGenerator.Ldc_I4(i);
                 methodFuncGenerator.Emit(OpCodes.Ldelem_Ref);
                 if (unwrappedParameterType.IsValueType)
                 {
@@ -60,35 +61,44 @@ namespace Larva.DynamicProxy.Emitters
                 }
                 var methodFuncArgumentVar = methodFuncGenerator.DeclareLocal(unwrappedParameterType);
                 methodFuncGenerator.Emit(OpCodes.Stloc, methodFuncArgumentVar);
-                methodFuncArgumentVarList.Add(methodFuncArgumentVar);
+                methodFuncArgumentVarList[i] = methodFuncArgumentVar;
             }
 
             // 获取返回值，无返回类型的方法，返回值设为null
-            methodFuncGenerator.Emit(OpCodes.Ldarg_0);
+            methodFuncGenerator.Ldarg(0);
             methodFuncGenerator.Emit(OpCodes.Ldfld, proxiedObjField);
             for (var i = 0; i < parameters.Length; i++)
             {
-                var unwrappedParameterType = methodFuncArgumentVarList[i].LocalType;
                 if (parameters[i].ParameterType.IsByRef)
                 {
                     methodFuncGenerator.Emit(OpCodes.Ldloca_S, methodFuncArgumentVarList[i]);
                 }
                 else
                 {
-                    methodFuncGenerator.Emit(OpCodes.Ldloc, methodFuncArgumentVarList[i]);
+                    methodFuncGenerator.Ldarg(1);
+                    methodFuncGenerator.Ldc_I4(i);
+                    methodFuncGenerator.Emit(OpCodes.Ldelem_Ref);
+                    if (parameters[i].ParameterType.IsValueType)
+                    {
+                        methodFuncGenerator.Emit(OpCodes.Unbox_Any, parameters[i].ParameterType);
+                    }
+                    else if (parameters[i].ParameterType != typeof(object))
+                    {
+                        methodFuncGenerator.Emit(OpCodes.Castclass, parameters[i].ParameterType);
+                    }
                 }
             }
             methodFuncGenerator.Emit(OpCodes.Callvirt, proxiedTypeMethodInfo);
-            var methodFuncReturnValueVal = methodFuncGenerator.DeclareLocal(typeof(object));
-            if (proxiedTypeMethodInfo.ReturnType == typeof(void))
+            LocalBuilder methodFuncReturnValueVal = null;
+            if (proxiedTypeMethodInfo.ReturnType != typeof(void))
             {
-                methodFuncGenerator.Emit(OpCodes.Ldnull);
+                methodFuncReturnValueVal = methodFuncGenerator.DeclareLocal(typeof(object));
+                if (proxiedTypeMethodInfo.ReturnType.IsValueType)
+                {
+                    methodFuncGenerator.Emit(OpCodes.Box, proxiedTypeMethodInfo.ReturnType);
+                }
+                methodFuncGenerator.Emit(OpCodes.Stloc, methodFuncReturnValueVal);
             }
-            else if (proxiedTypeMethodInfo.ReturnType.IsValueType)
-            {
-                methodFuncGenerator.Emit(OpCodes.Box, proxiedTypeMethodInfo.ReturnType);
-            }
-            methodFuncGenerator.Emit(OpCodes.Stloc, methodFuncReturnValueVal);
 
             // ref/out 参数赋值
             for (var i = 0; i < parameters.Length; i++)
@@ -99,8 +109,8 @@ namespace Larva.DynamicProxy.Emitters
                 }
                 var unwrappedParameterType = parameters[i].ParameterType.GetElementType();
 
-                methodFuncGenerator.Emit(OpCodes.Ldarg_1);
-                methodFuncGenerator.Emit(OpCodes.Ldc_I4, i);
+                methodFuncGenerator.Ldarg(1);
+                methodFuncGenerator.Ldc_I4(i);
                 methodFuncGenerator.Emit(OpCodes.Ldloc, methodFuncArgumentVarList[i]);
                 if (methodFuncArgumentVarList[i].LocalType.IsValueType)
                 {
@@ -108,8 +118,14 @@ namespace Larva.DynamicProxy.Emitters
                 }
                 methodFuncGenerator.Emit(OpCodes.Stelem_Ref);
             }
-
-            methodFuncGenerator.Emit(OpCodes.Ldloc, methodFuncReturnValueVal);
+            if (methodFuncReturnValueVal == null)
+            {
+                methodFuncGenerator.Emit(OpCodes.Ldnull);
+            }
+            else
+            {
+                methodFuncGenerator.Emit(OpCodes.Ldloc, methodFuncReturnValueVal);
+            }
             methodFuncGenerator.Emit(OpCodes.Ret);
 
             #endregion
@@ -139,12 +155,12 @@ namespace Larva.DynamicProxy.Emitters
             var methodGenerator = method.GetILGenerator();
 
             // 创建参数类型列表的局部变量
-            methodGenerator.Emit(OpCodes.Ldc_I4, parameters.Length);
+            methodGenerator.Ldc_I4(parameters.Length);
             methodGenerator.Emit(OpCodes.Newarr, typeof(Type));
             for (var i = 0; i < parameters.Length; i++)
             {
                 methodGenerator.Emit(OpCodes.Dup);
-                methodGenerator.Emit(OpCodes.Ldc_I4, i);
+                methodGenerator.Ldc_I4(i);
                 var unwrappedParameterType = parameters[i].ParameterType;
                 if (parameters[i].ParameterType.IsByRef)
                 {
@@ -153,17 +169,17 @@ namespace Larva.DynamicProxy.Emitters
                 methodGenerator.Emit(OpCodes.Ldtoken, unwrappedParameterType);
                 methodGenerator.Emit(OpCodes.Stelem_Ref);
             }
-            var argArgumentTypeArrayVar = methodGenerator.DeclareLocal(typeof(Type[]));
-            methodGenerator.Emit(OpCodes.Stloc, argArgumentTypeArrayVar);
+            var argumentTypeArrayVar = methodGenerator.DeclareLocal(typeof(Type[]));
+            methodGenerator.Emit(OpCodes.Stloc, argumentTypeArrayVar);
 
             // 创建参数列表的局部变量
-            methodGenerator.Emit(OpCodes.Ldc_I4, parameters.Length);
+            methodGenerator.Ldc_I4(parameters.Length);
             methodGenerator.Emit(OpCodes.Newarr, typeof(object));
             for (var i = 0; i < parameters.Length; i++)
             {
                 methodGenerator.Emit(OpCodes.Dup);
-                methodGenerator.Emit(OpCodes.Ldc_I4, i);
-                methodGenerator.Emit(OpCodes.Ldarg, i + 1);
+                methodGenerator.Ldc_I4(i);
+                methodGenerator.Ldarg(i + 1);
                 var unwrappedParameterType = parameters[i].ParameterType;
                 if (parameters[i].ParameterType.IsByRef)
                 {
@@ -176,27 +192,27 @@ namespace Larva.DynamicProxy.Emitters
                 }
                 methodGenerator.Emit(OpCodes.Stelem_Ref);
             }
-            var argArgumentArrayVar = methodGenerator.DeclareLocal(typeof(object[]));
-            methodGenerator.Emit(OpCodes.Stloc, argArgumentArrayVar);
+            var argumentArrayVar = methodGenerator.DeclareLocal(typeof(object[]));
+            methodGenerator.Emit(OpCodes.Stloc, argumentArrayVar);
 
             #region 创建 MethodInvocation
 
             methodGenerator.Emit(OpCodes.Ldsfld, interceptorsField);// 拦截器
             methodGenerator.Emit(OpCodes.Ldstr, proxiedTypeMethodInfo.Name);// 方法名
-            methodGenerator.Emit(OpCodes.Ldloc, argArgumentTypeArrayVar);// 参数类型列表
+            methodGenerator.Emit(OpCodes.Ldloc, argumentTypeArrayVar);// 参数类型列表
             methodGenerator.Emit(OpCodes.Ldtoken, proxiedTypeMethodInfo.ReturnType);// 返回类型            
 
             // 目标对象
-            methodGenerator.Emit(OpCodes.Ldarg_0);
+            methodGenerator.Ldarg(0);
             methodGenerator.Emit(OpCodes.Ldfld, proxiedObjField);
 
             // 目标方法回调
-            methodGenerator.Emit(OpCodes.Ldarg_0);
+            methodGenerator.Ldarg(0);
             methodGenerator.Emit(OpCodes.Ldftn, methodFunc);
             methodGenerator.Emit(OpCodes.Newobj, typeof(Func<object[], object>).GetConstructor(new Type[] { typeof(object), typeof(IntPtr) }));
 
-            methodGenerator.Emit(OpCodes.Ldarg_0);// 代理对象
-            methodGenerator.Emit(OpCodes.Ldloc, argArgumentArrayVar);// 参数列表
+            methodGenerator.Ldarg(0);// 代理对象
+            methodGenerator.Emit(OpCodes.Ldloc, argumentArrayVar);// 参数列表
 
             methodGenerator.Emit(OpCodes.Newobj, typeof(MethodInvocation).GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(string), typeof(Type[]), typeof(Type), typeof(object), typeof(Func<object[], object>), typeof(object), typeof(object[]) }));
 
@@ -217,9 +233,9 @@ namespace Larva.DynamicProxy.Emitters
                     continue;
                 }
                 var unwrappedParameterType = parameters[i].ParameterType.GetElementType();
-                methodGenerator.Emit(OpCodes.Ldarg, i + 1);
-                methodGenerator.Emit(OpCodes.Ldloc, argArgumentArrayVar);
-                methodGenerator.Emit(OpCodes.Ldc_I4, i);
+                methodGenerator.Ldarg(i + 1);
+                methodGenerator.Emit(OpCodes.Ldloc, argumentArrayVar);
+                methodGenerator.Ldc_I4(i);
                 methodGenerator.Emit(OpCodes.Ldelem_Ref);
                 if (unwrappedParameterType.IsValueType)
                 {

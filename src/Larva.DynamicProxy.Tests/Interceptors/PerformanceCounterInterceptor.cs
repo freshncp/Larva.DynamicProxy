@@ -1,21 +1,22 @@
-﻿using System;
+﻿using Larva.DynamicProxy.Interceptions;
+using System;
 using System.Diagnostics;
 using System.Threading;
 
 namespace Larva.DynamicProxy.Tests.Interceptors
 {
-    public class PerformanceCounterInterceptor : Larva.DynamicProxy.StandardInterceptor
+    public class PerformanceCounterInterceptor : StandardInterceptor
     {
         private AsyncLocal<Stopwatch> _sw = new AsyncLocal<Stopwatch>();
         private long _disposeCounter = 0;
 
-        protected override void PreProceed(Larva.DynamicProxy.IInvocation invocation)
+        protected override void PreProceed(IInvocation invocation)
         {
             _sw.Value = new Stopwatch();
             _sw.Value.Start();
         }
 
-        protected override void PostProceed(Larva.DynamicProxy.IInvocation invocation)
+        protected override void PostProceed(IInvocation invocation)
         {
             _sw.Value.Stop();
             var elapsedMilliseconds = _sw.Value.ElapsedMilliseconds;

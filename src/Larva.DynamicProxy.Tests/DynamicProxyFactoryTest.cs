@@ -1,3 +1,4 @@
+using Larva.DynamicProxy.Interceptions;
 using System;
 using Larva.DynamicProxy.Tests.Application;
 using Larva.DynamicProxy.Tests.Interceptors;
@@ -39,10 +40,8 @@ namespace Larva.DynamicProxy.Tests
             var userLoginService = (IUserLoginService)Larva.DynamicProxy.DynamicProxyFactory.CreateProxy(
                 typeof(IUserLoginService),
                 new UserLoginService(new UserLoginRepository()),
-                new IInterceptor[] {
-                    new UserLoginCounterInterceptor(),
-                    new PerformanceCounterInterceptor()
-                });
+                new UserLoginCounterInterceptor(),
+                new PerformanceCounterInterceptor());
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
             int retryCount = 1;
             userLoginService.Login("jack", "123456", 996, out bool accountExists, ref retryCount, out UserDto userDto);

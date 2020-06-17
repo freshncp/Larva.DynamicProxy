@@ -1,7 +1,8 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace Larva.DynamicProxy
+namespace Larva.DynamicProxy.Interceptions
 {
     /// <summary>
     /// 标准拦截器
@@ -22,22 +23,14 @@ namespace Larva.DynamicProxy
                     PreProceed(invocation);
                     invocation.Proceed();
                     isFailBeforePostProceed = false;
-                    if (invocation.ReturnValue == null)
+                    if (!invocation.IsInvocationTargetInvocated)
                     {
-                        try
-                        {
-                            PostProceed(invocation);
-                        }
-                        catch { }
+                        EatException(() => PostProceed(invocation));
                     }
                 }
                 catch (Exception ex)
                 {
-                    try
-                    {
-                        ExceptionThrown(invocation, ex);
-                    }
-                    catch { }
+                    EatException(() => ExceptionThrown(invocation, ex));
                     if (ex is AggregateException)
                     {
                         throw ex;
@@ -50,36 +43,37 @@ namespace Larva.DynamicProxy
                 finally
                 {
                     if (isFailBeforePostProceed
-                        || invocation.ReturnValue == null)
+                        || !invocation.IsInvocationTargetInvocated)
                     {
-                        Dispose();
+                        EatException(() => Dispose());
                     }
                 }
                 if (!isFailBeforePostProceed
-                    && invocation.ReturnValue != null)
+                    && invocation.IsInvocationTargetInvocated)
                 {
-                    ((Task)invocation.ReturnValue).ContinueWith((lastTask, state) =>
+                    if (invocation.ReturnValue == null)
                     {
-                        if (lastTask.Exception == null)
-                        {
-                            try
-                            {
-                                PostProceed((IInvocation)state);
-                            }
-                            catch { }
-                        }
-                        else
-                        {
-                            try
-                            {
-                                ExceptionThrown((IInvocation)state, lastTask.Exception.InnerExceptions[0]);
-                            }
-                            catch { }
-                        }
-                    }, invocation).ContinueWith((lastTask) =>
+                        EatException(() => Dispose());
+                    }
+                    else
                     {
-                        Dispose();
-                    });
+                        var waitPostProceedOrExceptionThrown = new ManualResetEvent(false);
+                        ((Task)invocation.ReturnValue).ContinueWith((lastTask, state) =>
+                        {
+                            if (lastTask.Exception == null)
+                            {
+                                EatException(() => PostProceed(((InvocationAndEventWaitHandle)state).Invocation));
+                                ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
+                            }
+                            else
+                            {
+                                EatException(() => ExceptionThrown(((InvocationAndEventWaitHandle)state).Invocation, lastTask.Exception.InnerExceptions[0]));
+                                ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
+                            }
+                        }, new InvocationAndEventWaitHandle(invocation, waitPostProceedOrExceptionThrown));
+                        waitPostProceedOrExceptionThrown.WaitOne();
+                        EatException(() => Dispose());
+                    }
                 }
             }
             else
@@ -88,24 +82,16 @@ namespace Larva.DynamicProxy
                 {
                     PreProceed(invocation);
                     invocation.Proceed();
-                    try
-                    {
-                        PostProceed(invocation);
-                    }
-                    catch { }
+                    EatException(() => PostProceed(invocation));
                 }
                 catch (Exception ex)
                 {
-                    try
-                    {
-                        ExceptionThrown(invocation, ex);
-                    }
-                    catch { }
+                    EatException(() => ExceptionThrown(invocation, ex));
                     throw new AggregateException(ex);
                 }
                 finally
                 {
-                    Dispose();
+                    EatException(() => Dispose());
                 }
             }
         }
@@ -129,7 +115,7 @@ namespace Larva.DynamicProxy
         /// <param name="exception">异常</param>
         protected virtual void ExceptionThrown(IInvocation invocation, Exception exception)
         {
-            
+
         }
 
         /// <summary>
@@ -138,6 +124,28 @@ namespace Larva.DynamicProxy
         public virtual void Dispose()
         {
 
+        }
+
+        private void EatException(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch { }
+        }
+
+        private class InvocationAndEventWaitHandle
+        {
+            public InvocationAndEventWaitHandle(IInvocation invocation, EventWaitHandle waitHandle)
+            {
+                Invocation = invocation;
+                WaitHandle = waitHandle;
+            }
+
+            public IInvocation Invocation { get; private set; }
+
+            public EventWaitHandle WaitHandle { get; private set; }
         }
     }
 }
