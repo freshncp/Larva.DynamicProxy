@@ -6,7 +6,7 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 
 - 基于类型，返回指定接口的代理类，此代理类拥有原始类Public的构造函数；
 
-- 通过实现IInterceptor接口或继承StandardInterceptor类，并将其实现类的类型作为参数传入创建代理或代理类，即可实现拦截方法（Method）、属性（Property）；
+- 通过实现IInterceptor接口或继承StandardInterceptor类，并将其对象实例作为参数传入创建代理或代理类，即可实现拦截方法（Method）、属性（Property）；
 
 - StandardInterceptor 支持拦截Task异步方法。
 
