@@ -40,9 +40,9 @@ namespace Larva.DynamicProxy.Emitters
                 var addMethod = _typeGeneratorInfo.Builder.DefineMethod("add_" + proxiedTypeEventInfo.Name, addRemoveAttr, typeof(void), new Type[] { proxiedTypeEventInfo.EventHandlerType });
                 var generator = addMethod.GetILGenerator();
 
-                generator.Emit(OpCodes.Ldarg_0);
+                generator.Ldarg(0);
                 generator.Emit(OpCodes.Ldfld, _typeGeneratorInfo.ProxiedObjField);
-                generator.Emit(OpCodes.Ldarg_1);
+                generator.Ldarg(1);
                 generator.Emit(OpCodes.Call, proxiedTypeEventInfo.AddMethod);
 
                 generator.Emit(OpCodes.Ret);
@@ -54,9 +54,9 @@ namespace Larva.DynamicProxy.Emitters
                 var removeMethod = _typeGeneratorInfo.Builder.DefineMethod("remove_" + proxiedTypeEventInfo.Name, addRemoveAttr, typeof(void), new Type[] { proxiedTypeEventInfo.EventHandlerType });
                 var generator = removeMethod.GetILGenerator();
 
-                generator.Emit(OpCodes.Ldarg_0);
+                generator.Ldarg(0);
                 generator.Emit(OpCodes.Ldfld, _typeGeneratorInfo.ProxiedObjField);
-                generator.Emit(OpCodes.Ldarg_1);
+                generator.Ldarg(1);
                 generator.Emit(OpCodes.Call, proxiedTypeEventInfo.RemoveMethod);
 
                 generator.Emit(OpCodes.Ret);
@@ -68,9 +68,9 @@ namespace Larva.DynamicProxy.Emitters
                 var raiseMethod = _typeGeneratorInfo.Builder.DefineMethod("raise_" + proxiedTypeEventInfo.Name, addRemoveAttr, typeof(void), new Type[] { proxiedTypeEventInfo.EventHandlerType });
                 var generator = raiseMethod.GetILGenerator();
 
-                generator.Emit(OpCodes.Ldarg_0);
+                generator.Ldarg(0);
                 generator.Emit(OpCodes.Ldfld, _typeGeneratorInfo.ProxiedObjField);
-                generator.Emit(OpCodes.Ldarg_1);
+                generator.Ldarg(1);
                 generator.Emit(OpCodes.Call, proxiedTypeEventInfo.RaiseMethod);
 
                 generator.Emit(OpCodes.Ret);

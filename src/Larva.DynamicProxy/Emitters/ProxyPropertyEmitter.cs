@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Larva.DynamicProxy.Interceptions;
+using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -45,19 +46,14 @@ namespace Larva.DynamicProxy.Emitters
                 var getMethodFunc = _typeGeneratorInfo.Builder.DefineMethod($"__get_{proxiedTypePropertyInfo.Name}__", MethodAttributes.Private, typeof(object), Type.EmptyTypes);
                 var getMethodFuncGenerator = getMethodFunc.GetILGenerator();
 
-                // 获取返回值，无返回类型的方法，返回值设为null
-                getMethodFuncGenerator.Emit(OpCodes.Ldarg_0);
+                // 获取返回值
+                getMethodFuncGenerator.Ldarg(0);
                 getMethodFuncGenerator.Emit(OpCodes.Ldfld, proxiedObjField);
-
                 getMethodFuncGenerator.Emit(OpCodes.Callvirt, proxiedTypePropertyInfo.GetMethod);
-                var getMethodFuncReturnValueVal = getMethodFuncGenerator.DeclareLocal(typeof(object));
                 if (proxiedTypePropertyInfo.PropertyType.IsValueType)
                 {
                     getMethodFuncGenerator.Emit(OpCodes.Box, proxiedTypePropertyInfo.PropertyType);
                 }
-                getMethodFuncGenerator.Emit(OpCodes.Stloc, getMethodFuncReturnValueVal);
-
-                getMethodFuncGenerator.Emit(OpCodes.Ldloc, getMethodFuncReturnValueVal);
                 getMethodFuncGenerator.Emit(OpCodes.Ret);
 
                 #endregion
@@ -74,15 +70,15 @@ namespace Larva.DynamicProxy.Emitters
                 getMethodGenerator.Emit(OpCodes.Ldtoken, proxiedTypePropertyInfo.PropertyType);// 属性类型            
 
                 // 目标对象
-                getMethodGenerator.Emit(OpCodes.Ldarg_0);
+                getMethodGenerator.Ldarg(0);
                 getMethodGenerator.Emit(OpCodes.Ldfld, proxiedObjField);
 
                 // 目标方法回调
-                getMethodGenerator.Emit(OpCodes.Ldarg_0);
+                getMethodGenerator.Ldarg(0);
                 getMethodGenerator.Emit(OpCodes.Ldftn, getMethodFunc);
                 getMethodGenerator.Emit(OpCodes.Newobj, typeof(Func<object>).GetConstructor(new Type[] { typeof(object), typeof(IntPtr) }));
 
-                getMethodGenerator.Emit(OpCodes.Ldarg_0);// 代理对象
+                getMethodGenerator.Ldarg(0);// 代理对象
 
                 getMethodGenerator.Emit(OpCodes.Newobj, typeof(PropertyGetInvocation).GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(string), typeof(Type), typeof(object), typeof(Func<object>), typeof(object) }));
 
@@ -118,8 +114,10 @@ namespace Larva.DynamicProxy.Emitters
                 var setMethodFunc = _typeGeneratorInfo.Builder.DefineMethod($"__set_{proxiedTypePropertyInfo.Name}__", MethodAttributes.Private, typeof(void), new Type[] { typeof(object) });
                 var setMethodFuncGenerator = setMethodFunc.GetILGenerator();
 
-                // 参数列表Copy到局部变量
-                setMethodFuncGenerator.Emit(OpCodes.Ldarg_1);
+                // 获取返回值，无返回类型的方法，返回值设为null
+                setMethodFuncGenerator.Ldarg(0);
+                setMethodFuncGenerator.Emit(OpCodes.Ldfld, proxiedObjField);
+                setMethodFuncGenerator.Ldarg(1);
                 if (proxiedTypePropertyInfo.PropertyType.IsValueType)
                 {
                     setMethodFuncGenerator.Emit(OpCodes.Unbox_Any, proxiedTypePropertyInfo.PropertyType);
@@ -128,13 +126,6 @@ namespace Larva.DynamicProxy.Emitters
                 {
                     setMethodFuncGenerator.Emit(OpCodes.Castclass, proxiedTypePropertyInfo.PropertyType);
                 }
-                var methodFuncArgumentVar = setMethodFuncGenerator.DeclareLocal(proxiedTypePropertyInfo.PropertyType);
-                setMethodFuncGenerator.Emit(OpCodes.Stloc, methodFuncArgumentVar);
-
-                // 获取返回值，无返回类型的方法，返回值设为null
-                setMethodFuncGenerator.Emit(OpCodes.Ldarg_0);
-                setMethodFuncGenerator.Emit(OpCodes.Ldfld, proxiedObjField);
-                setMethodFuncGenerator.Emit(OpCodes.Ldloc, methodFuncArgumentVar);
                 setMethodFuncGenerator.Emit(OpCodes.Callvirt, proxiedTypePropertyInfo.SetMethod);
                 setMethodFuncGenerator.Emit(OpCodes.Ret);
 
@@ -147,15 +138,6 @@ namespace Larva.DynamicProxy.Emitters
                 setMethod.DefineParameter(1, methodParameter.Attributes, methodParameter.Name);
                 var setMethodGenerator = setMethod.GetILGenerator();
 
-                // 创建参数列表的局部变量
-                setMethodGenerator.Emit(OpCodes.Ldarg_1);
-                if (proxiedTypePropertyInfo.DeclaringType.IsValueType)
-                {
-                    setMethodGenerator.Emit(OpCodes.Box, proxiedTypePropertyInfo.DeclaringType);
-                }
-                var argumentVar = setMethodGenerator.DeclareLocal(typeof(object));
-                setMethodGenerator.Emit(OpCodes.Stloc, argumentVar);
-
                 #region 创建 MethodInvocation
 
                 setMethodGenerator.Emit(OpCodes.Ldsfld, interceptorsField);// 拦截器
@@ -163,16 +145,22 @@ namespace Larva.DynamicProxy.Emitters
                 setMethodGenerator.Emit(OpCodes.Ldtoken, proxiedTypePropertyInfo.PropertyType);// 属性类型            
 
                 // 目标对象
-                setMethodGenerator.Emit(OpCodes.Ldarg_0);
+                setMethodGenerator.Ldarg(0);
                 setMethodGenerator.Emit(OpCodes.Ldfld, proxiedObjField);
 
                 // 目标方法回调
-                setMethodGenerator.Emit(OpCodes.Ldarg_0);
+                setMethodGenerator.Ldarg(0);
                 setMethodGenerator.Emit(OpCodes.Ldftn, setMethodFunc);
                 setMethodGenerator.Emit(OpCodes.Newobj, typeof(Action<object>).GetConstructor(new Type[] { typeof(object), typeof(IntPtr) }));
 
-                setMethodGenerator.Emit(OpCodes.Ldarg_0);// 代理对象
-                setMethodGenerator.Emit(OpCodes.Ldloc, argumentVar);// 参数
+                setMethodGenerator.Ldarg(0);// 代理对象
+
+                // 参数
+                setMethodGenerator.Ldarg(1);
+                if (proxiedTypePropertyInfo.DeclaringType.IsValueType)
+                {
+                    setMethodGenerator.Emit(OpCodes.Box, proxiedTypePropertyInfo.DeclaringType);
+                }
 
                 setMethodGenerator.Emit(OpCodes.Newobj, typeof(PropertySetInvocation).GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(string), typeof(Type), typeof(object), typeof(Action<object>), typeof(object), typeof(object) }));
 

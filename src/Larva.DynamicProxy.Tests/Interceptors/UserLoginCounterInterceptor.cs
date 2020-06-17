@@ -1,24 +1,25 @@
-﻿using Larva.DynamicProxy.Tests.Application;
+﻿using Larva.DynamicProxy.Interceptions;
+using Larva.DynamicProxy.Tests.Application;
 using System;
 using System.Collections.Concurrent;
 
 namespace Larva.DynamicProxy.Tests.Interceptors
 {
-    public class UserLoginCounterInterceptor : Larva.DynamicProxy.StandardInterceptor
+    public class UserLoginCounterInterceptor : StandardInterceptor
     {
         private ConcurrentDictionary<string, long> _counter = new ConcurrentDictionary<string, long>();
         private long _disposeCounter = 0;
 
-        protected override void PreProceed(Larva.DynamicProxy.IInvocation invocation)
+        protected override void PreProceed(IInvocation invocation)
         {
             Console.WriteLine("Begin login");
         }
 
-        protected override void PostProceed(Larva.DynamicProxy.IInvocation invocation)
+        protected override void PostProceed(IInvocation invocation)
         {
             if (invocation.InvocationTarget is IUserLoginService
                 && invocation.MemberType == System.Reflection.MemberTypes.Method
-                && invocation.MemberOperateType == Larva.DynamicProxy.MemberOperateTypes.None
+                && invocation.MemberOperateType == MemberOperateTypes.None
                 && (invocation.MemberName == nameof(IUserLoginService.Login)
                     || invocation.MemberName == nameof(IUserLoginService.LoginAsync)))
             {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Larva.DynamicProxy
+namespace Larva.DynamicProxy.Interceptions
 {
     /// <summary>
     /// 调用
@@ -52,6 +52,11 @@ namespace Larva.DynamicProxy
         /// 返回值
         /// </summary>
         object ReturnValue { get; }
+
+        /// <summary>
+        /// 是否目标对象已调用
+        /// </summary>
+        bool IsInvocationTargetInvocated { get; }
 
         /// <summary>
         /// 处理

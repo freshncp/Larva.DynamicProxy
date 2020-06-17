@@ -1,4 +1,4 @@
-﻿namespace Larva.DynamicProxy
+﻿namespace Larva.DynamicProxy.Interceptions
 {
     /// <summary>
     /// 拦截器

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Larva.DynamicProxy
+namespace Larva.DynamicProxy.Interceptions
 {
     /// <summary>
     /// 调用 抽象类
@@ -85,6 +85,11 @@ namespace Larva.DynamicProxy
         public object ReturnValue { get; private set; }
 
         /// <summary>
+        /// 是否目标对象已调用
+        /// </summary>
+        public bool IsInvocationTargetInvocated { get; private set; }
+
+        /// <summary>
         /// 处理
         /// </summary>
         public void Proceed()
@@ -97,6 +102,7 @@ namespace Larva.DynamicProxy
             else
             {
                 ReturnValue = InvokeInvocationTarget();
+                IsInvocationTargetInvocated = true;
             }
         }
 

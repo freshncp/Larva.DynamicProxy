@@ -32,8 +32,8 @@ namespace Larva.DynamicProxy.Emitters
                 var cctor = _typeGeneratorInfo.Builder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new Type[] { _typeGeneratorInfo.ProxiedType });
                 var proxiedObjField = _typeGeneratorInfo.ProxiedObjField;
                 var generator = cctor.GetILGenerator();
-                generator.Emit(OpCodes.Ldarg_0);
-                generator.Emit(OpCodes.Ldarg_1);
+                generator.Ldarg(0);
+                generator.Ldarg(1);
                 generator.Emit(OpCodes.Stfld, proxiedObjField);
                 generator.Emit(OpCodes.Ret);
             }
@@ -44,10 +44,10 @@ namespace Larva.DynamicProxy.Emitters
                 var cctor = _typeGeneratorInfo.Builder.DefineConstructor(proxiedTypeConstructorInfo.Attributes, proxiedTypeConstructorInfo.CallingConvention, paramTypes);
                 var proxiedObjField = _typeGeneratorInfo.ProxiedObjField;
                 var generator = cctor.GetILGenerator();
-                generator.Emit(OpCodes.Ldarg_0);
+                generator.Ldarg(0);
                 for (var i = 0; i < paramTypes.Length; i++)
                 {
-                    generator.Emit(OpCodes.Ldarg, i + 1);
+                    generator.Ldarg(i + 1);
                 }
                 generator.Emit(OpCodes.Newobj, proxiedTypeConstructorInfo);
                 generator.Emit(OpCodes.Stfld, proxiedObjField);
