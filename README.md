@@ -18,38 +18,40 @@ dotnet add package Larva.DynamicProxy
 
 ## 性能对比
 
+执行100W次，Larva.DynamicProxy 与 Castle.Core的性能对比
+
 ```plain
 Larva.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        659ms
-        GC[Gen]:           357/0/0
+        Excute Time:        389ms
+        GC[Gen]:            66/0/0
 
 Larva.DynamicProxy.TestNormalMethod：
-        Excute Time:        485ms
-        GC[Gen]:           300/0/0
+        Excute Time:        318ms
+        GC[Gen]:            56/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:        613ms
-        GC[Gen]:           351/0/0
+        Excute Time:        372ms
+        GC[Gen]:            65/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:        685ms
-        GC[Gen]:           331/0/0
+        Excute Time:        338ms
+        GC[Gen]:            62/0/0
 
 Castle.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        273ms
-        GC[Gen]:           158/0/0
+        Excute Time:        172ms
+        GC[Gen]:            29/0/0
 
 Castle.DynamicProxy.TestNormalMethod：
-        Excute Time:        193ms
-        GC[Gen]:           107/0/0
+        Excute Time:        109ms
+        GC[Gen]:            20/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:      1,242ms
-        GC[Gen]:           428/0/0
+        Excute Time:        731ms
+        GC[Gen]:            80/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:      1,410ms
-        GC[Gen]:           408/0/0
+        Excute Time:        696ms
+        GC[Gen]:            76/0/0
 ```
 
 ## 使用
