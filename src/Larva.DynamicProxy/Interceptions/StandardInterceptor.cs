@@ -70,7 +70,7 @@ namespace Larva.DynamicProxy.Interceptions
                                 EatException(() => ExceptionThrown(((InvocationAndEventWaitHandle)state).Invocation, lastTask.Exception.InnerExceptions[0]));
                                 ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
                             }
-                        }, new InvocationAndEventWaitHandle(invocation, waitPostProceedOrExceptionThrown));
+                        }, new InvocationAndEventWaitHandle(invocation, waitPostProceedOrExceptionThrown)).ConfigureAwait(false);
                         waitPostProceedOrExceptionThrown.WaitOne();
                         EatException(() => Dispose());
                     }

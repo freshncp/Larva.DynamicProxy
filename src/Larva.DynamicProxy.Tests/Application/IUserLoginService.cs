@@ -8,6 +8,8 @@ namespace Larva.DynamicProxy.Tests.Application
 
         Task<bool> LoginAsync(string userName, string password);
 
+        T ActAs<T>(T user) where T : UserDto, new();
+
         string UserName { get; }
 
         int Sault { get; set; }

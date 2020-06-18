@@ -21,7 +21,7 @@ namespace Larva.DynamicProxy.Interceptions
         /// <param name="methodInvocationTargetFunc">调用目标方法回调</param>
         /// <param name="proxy">代理对象</param>
         public PropertyGetInvocation(IInterceptor[] interceptors, string propertyName, Type propertyType, object invocationTarget, Func<object> methodInvocationTargetFunc, object proxy)
-            : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertyGet, Type.EmptyTypes, propertyType, invocationTarget, proxy, null)
+            : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertyGet, Type.EmptyTypes, Type.EmptyTypes, propertyType, invocationTarget, proxy, null)
         {
             if (interceptors != null && interceptors.Length > 0)
             {

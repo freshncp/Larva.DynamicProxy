@@ -37,6 +37,23 @@ namespace Larva.DynamicProxy.Emitters
             #region 私有方法，用于生成目标方法回调
 
             var methodFunc = _typeGeneratorInfo.Builder.DefineMethod($"__{proxiedTypeMethodInfo.Name}__", MethodAttributes.Private, typeof(object), new Type[] { typeof(object[]) });
+            GenericTypeParameterBuilder[] methodFuncGenericParameters = null;
+            if (proxiedTypeMethodInfo.IsGenericMethod)
+            {
+                var genericParameterNameList = new List<string>();
+                var genericArgs = proxiedTypeMethodInfo.GetGenericArguments();
+                for (var i = 0; i < genericArgs.Length; i++)
+                {
+                    genericParameterNameList.Add(string.Format("T{0}", i));
+                }
+                methodFuncGenericParameters = methodFunc.DefineGenericParameters(genericParameterNameList.ToArray());
+                for (var i = 0; i < genericArgs.Length; i++)
+                {
+                    methodFuncGenericParameters[i].SetGenericParameterAttributes(genericArgs[i].GenericParameterAttributes);
+                    methodFuncGenericParameters[i].SetInterfaceConstraints(genericArgs[i].GetInterfaces());
+                    methodFuncGenericParameters[i].SetBaseTypeConstraint(genericArgs[i].BaseType);
+                }
+            }
             var methodFuncGenerator = methodFunc.GetILGenerator();
 
             // 参数列表Copy到局部变量
@@ -88,7 +105,14 @@ namespace Larva.DynamicProxy.Emitters
                     }
                 }
             }
-            methodFuncGenerator.Emit(OpCodes.Callvirt, proxiedTypeMethodInfo);
+            if (proxiedTypeMethodInfo.IsGenericMethod)
+            {
+                methodFuncGenerator.Emit(OpCodes.Callvirt, proxiedTypeMethodInfo.MakeGenericMethod(methodFuncGenericParameters));
+            }
+            else
+            {
+                methodFuncGenerator.Emit(OpCodes.Callvirt, proxiedTypeMethodInfo);
+            }
             LocalBuilder methodFuncReturnValueVal = null;
             if (proxiedTypeMethodInfo.ReturnType != typeof(void))
             {
@@ -133,6 +157,7 @@ namespace Larva.DynamicProxy.Emitters
             #region 代理方法
 
             var method = _typeGeneratorInfo.Builder.DefineMethod(proxiedTypeMethodInfo.Name, MethodAttributes.Public | MethodAttributes.Virtual, proxiedTypeMethodInfo.ReturnType, parameters.Select(m => m.ParameterType).ToArray());
+            GenericTypeParameterBuilder[] methodGenericParameters = null;
             if (proxiedTypeMethodInfo.IsGenericMethod)
             {
                 var genericArgs = proxiedTypeMethodInfo.GetGenericArguments();
@@ -141,11 +166,12 @@ namespace Larva.DynamicProxy.Emitters
                 {
                     genericParameterNameList.Add(string.Format("T{0}", i));
                 }
-                var genericParameters = method.DefineGenericParameters(genericParameterNameList.ToArray());
+                methodGenericParameters = method.DefineGenericParameters(genericParameterNameList.ToArray());
                 for (var i = 0; i < genericArgs.Length; i++)
                 {
-                    var attrs = genericArgs[i].GenericParameterAttributes;
-                    genericParameters[i].SetGenericParameterAttributes(attrs);
+                    methodGenericParameters[i].SetGenericParameterAttributes(genericArgs[i].GenericParameterAttributes);
+                    methodGenericParameters[i].SetInterfaceConstraints(genericArgs[i].GetInterfaces());
+                    methodGenericParameters[i].SetBaseTypeConstraint(genericArgs[i].BaseType);
                 }
             }
             for (var i = 0; i < parameters.Length; i++)
@@ -171,6 +197,26 @@ namespace Larva.DynamicProxy.Emitters
             }
             var argumentTypeArrayVar = methodGenerator.DeclareLocal(typeof(Type[]));
             methodGenerator.Emit(OpCodes.Stloc, argumentTypeArrayVar);
+
+            // 创建泛型参数类型列表的局部变量
+            var genericArgumentTypeArrayVar = methodGenerator.DeclareLocal(typeof(Type[]));
+            if (proxiedTypeMethodInfo.IsGenericMethod)
+            {
+                methodGenerator.Ldc_I4(methodGenericParameters.Length);
+                methodGenerator.Emit(OpCodes.Newarr, typeof(Type));
+                for (var i = 0; i < methodGenericParameters.Length; i++)
+                {
+                    methodGenerator.Emit(OpCodes.Dup);
+                    methodGenerator.Ldc_I4(i);
+                    methodGenerator.Emit(OpCodes.Ldtoken, methodGenericParameters[i]);
+                    methodGenerator.Emit(OpCodes.Stelem_Ref);
+                }
+            }
+            else
+            {
+                methodGenerator.Emit(OpCodes.Ldnull);
+            }
+            methodGenerator.Emit(OpCodes.Stloc, genericArgumentTypeArrayVar);
 
             // 创建参数列表的局部变量
             methodGenerator.Ldc_I4(parameters.Length);
@@ -200,6 +246,7 @@ namespace Larva.DynamicProxy.Emitters
             methodGenerator.Emit(OpCodes.Ldsfld, interceptorsField);// 拦截器
             methodGenerator.Emit(OpCodes.Ldstr, proxiedTypeMethodInfo.Name);// 方法名
             methodGenerator.Emit(OpCodes.Ldloc, argumentTypeArrayVar);// 参数类型列表
+            methodGenerator.Emit(OpCodes.Ldloc, genericArgumentTypeArrayVar);// 泛型参数类型列表
             methodGenerator.Emit(OpCodes.Ldtoken, proxiedTypeMethodInfo.ReturnType);// 返回类型            
 
             // 目标对象
@@ -208,13 +255,20 @@ namespace Larva.DynamicProxy.Emitters
 
             // 目标方法回调
             methodGenerator.Ldarg(0);
-            methodGenerator.Emit(OpCodes.Ldftn, methodFunc);
+            if (proxiedTypeMethodInfo.IsGenericMethod)
+            {
+                methodGenerator.Emit(OpCodes.Ldftn, methodFunc.MakeGenericMethod(methodGenericParameters));
+            }
+            else
+            {
+                methodGenerator.Emit(OpCodes.Ldftn, methodFunc);
+            }
             methodGenerator.Emit(OpCodes.Newobj, typeof(Func<object[], object>).GetConstructor(new Type[] { typeof(object), typeof(IntPtr) }));
 
             methodGenerator.Ldarg(0);// 代理对象
             methodGenerator.Emit(OpCodes.Ldloc, argumentArrayVar);// 参数列表
 
-            methodGenerator.Emit(OpCodes.Newobj, typeof(MethodInvocation).GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(string), typeof(Type[]), typeof(Type), typeof(object), typeof(Func<object[], object>), typeof(object), typeof(object[]) }));
+            methodGenerator.Emit(OpCodes.Newobj, typeof(MethodInvocation).GetConstructor(new Type[] { typeof(IInterceptor[]), typeof(string), typeof(Type[]), typeof(Type[]), typeof(Type), typeof(object), typeof(Func<object[], object>), typeof(object), typeof(object[]) }));
 
             var invocationVar = methodGenerator.DeclareLocal(typeof(IInvocation));
             methodGenerator.Emit(OpCodes.Stloc, invocationVar);

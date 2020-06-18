@@ -28,7 +28,12 @@ namespace Larva.DynamicProxy.Tests.Application
             return await _userLoginRepository.ValidateAsync(userName, password);
         }
 
-        public string UserName { get; private set;}
+        public T ActAs<T>(T user) where T : UserDto, new()
+        {
+            return user;
+        }
+
+        public string UserName { get; private set; }
 
         public int Sault { get; set; }
     }

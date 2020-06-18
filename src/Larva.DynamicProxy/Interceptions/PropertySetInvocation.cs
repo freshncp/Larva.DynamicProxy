@@ -22,7 +22,7 @@ namespace Larva.DynamicProxy.Interceptions
         /// <param name="proxy">代理对象</param>
         /// <param name="propertyValue">属性值</param>
         public PropertySetInvocation(IInterceptor[] interceptors, string propertyName, Type propertyType, object invocationTarget, Action<object> methodInvocationTargetFunc, object proxy, object propertyValue)
-            : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertySet, new Type[] { propertyType }, typeof(void), invocationTarget, proxy, new object[] { propertyValue })
+            : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertySet, new Type[] { propertyType }, Type.EmptyTypes, typeof(void), invocationTarget, proxy, new object[] { propertyValue })
         {
             if (interceptors != null && interceptors.Length > 0)
             {

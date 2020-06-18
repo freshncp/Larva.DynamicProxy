@@ -6,7 +6,7 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 
 - 基于类型，返回指定接口的代理类，此代理类拥有原始类Public的构造函数；
 
-- 通过实现IInterceptor接口或继承StandardInterceptor类，并将其实现类的类型作为参数传入创建代理或代理类，即可实现拦截方法（Method）、属性（Property）；
+- 通过实现IInterceptor接口或继承StandardInterceptor类，并将其对象实例作为参数传入创建代理或代理类，即可实现拦截方法（Method）、属性（Property）；
 
 - StandardInterceptor 支持拦截Task异步方法。
 
@@ -16,11 +16,61 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 dotnet add package Larva.DynamicProxy
 ```
 
+## 性能对比
+
+```plain
+Larva.DynamicProxy.TestMethodWithRefAndOutParameter：
+        Excute Time:        659ms
+        GC[Gen]:           357/0/0
+
+Larva.DynamicProxy.TestNormalMethod：
+        Excute Time:        485ms
+        GC[Gen]:           300/0/0
+
+Larva.DynamicProxy.TestMethodWithGenericParameter：
+        Excute Time:        613ms
+        GC[Gen]:           351/0/0
+
+Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
+        Excute Time:        685ms
+        GC[Gen]:           331/0/0
+
+Castle.DynamicProxy.TestMethodWithRefAndOutParameter：
+        Excute Time:        273ms
+        GC[Gen]:           158/0/0
+
+Castle.DynamicProxy.TestNormalMethod：
+        Excute Time:        193ms
+        GC[Gen]:           107/0/0
+
+Castle.DynamicProxy.TestMethodWithGenericParameter：
+        Excute Time:      1,242ms
+        GC[Gen]:           428/0/0
+
+Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
+        Excute Time:      1,410ms
+        GC[Gen]:           408/0/0
+```
+
 ## 使用
 
 示例参见：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
 
 ## 发布历史
+
+### 2.0.0-beta4 (更新日期：2020/06/19)
+
+```plain
+1）修复动态代理对泛型方法的支持；
+2）IInvocation 增加属性 GenericArgumentTypes；
+3）增加性能测试代码。
+``
+
+### 2.0.0-beta3 (更新日期：2020/06/18)
+
+```plain
+1）修复动态代理对泛型方法的支持。
+```
 
 ### 2.0.0-beta2 (更新日期：2020/06/18)
 
