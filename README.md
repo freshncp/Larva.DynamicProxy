@@ -16,6 +16,43 @@ dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅�
 dotnet add package Larva.DynamicProxy
 ```
 
+## 性能对比
+
+```plain
+
+Larva.DynamicProxy.TestMethodWithRefAndOutParameter：
+        Excute Time:        712ms
+        GC[Gen]:           351/0/0
+
+Larva.DynamicProxy.TestNormalMethod：
+        Excute Time:        532ms
+        GC[Gen]:           295/0/0
+
+Larva.DynamicProxy.TestMethodWithGenericParameter：
+        Excute Time:        675ms
+        GC[Gen]:           326/0/0
+
+Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
+        Excute Time:        616ms
+        GC[Gen]:           306/0/0
+
+Castle.DynamicProxy.TestMethodWithRefAndOutParameter：
+        Excute Time:        267ms
+        GC[Gen]:           158/0/0
+
+Castle.DynamicProxy.TestNormalMethod：
+        Excute Time:        214ms
+        GC[Gen]:           107/0/0
+
+Castle.DynamicProxy.TestMethodWithGenericParameter：
+        Excute Time:      1,568ms
+        GC[Gen]:           428/0/0
+
+Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
+        Excute Time:      1,489ms
+        GC[Gen]:           408/0/0
+```
+
 ## 使用
 
 示例参见：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
