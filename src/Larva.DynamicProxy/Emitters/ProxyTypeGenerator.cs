@@ -120,15 +120,34 @@ namespace Larva.DynamicProxy.Emitters
                 return false;
             for (var i = 0; i < array1.Length; i++)
             {
-                if (array1[i].IsGenericType && array2[i].IsGenericType)
-                {
-                    if (!array1[i].GetGenericTypeDefinition().Equals(array2[i].GetGenericTypeDefinition()))
-                        return false;
-                }
-                else if (!array1[i].Equals(array2[i]))
+                if (!IsTypeEqual(array1[i], array2[i]))
                 {
                     return false;
                 }
+            }
+            return true;
+        }
+
+        private bool IsTypeEqual(Type type1, Type type2)
+        {
+            if (type1.IsGenericType && type2.IsGenericType)
+            {
+                if (!type1.GetGenericTypeDefinition().Equals(type2.GetGenericTypeDefinition()))
+                    return false;
+            }
+            else if (type1.IsGenericParameter && type2.IsGenericParameter)
+            {
+                if (type1.GenericParameterPosition != type2.GenericParameterPosition)
+                    return false;
+            }
+            else if ((type1.IsByRef && type2.IsByRef)
+                || (type1.IsArray && type2.IsArray))
+            {
+                return IsTypeEqual(type1.GetElementType(), type2.GetElementType());
+            }
+            else if (!type1.Equals(type2))
+            {
+                return false;
             }
             return true;
         }
@@ -199,6 +218,7 @@ namespace Larva.DynamicProxy.Emitters
                     }
 #if DEBUG
                     Console.WriteLine($"Method: {methodInfo.ReturnType.Name} {methodInfo.Name}({string.Join(", ", methodInfo.GetParameters().Select(s => $"{s.ParameterType.Name} {s.Name}"))})");
+
 #endif
                     new ProxyMethodEmitter(this).Emit(methodInfo);
                 }

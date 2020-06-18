@@ -12,7 +12,14 @@ namespace Larva.DynamicProxy.Tests.Interceptors
 
         protected override void PreProceed(IInvocation invocation)
         {
-            Console.WriteLine("Begin login");
+            if (invocation.InvocationTarget is IUserLoginService
+                && invocation.MemberType == System.Reflection.MemberTypes.Method
+                && invocation.MemberOperateType == MemberOperateTypes.None
+                && (invocation.MemberName == nameof(IUserLoginService.Login)
+                    || invocation.MemberName == nameof(IUserLoginService.LoginAsync)))
+            {
+                Console.WriteLine("Begin login");
+            }
         }
 
         protected override void PostProceed(IInvocation invocation)
@@ -27,7 +34,6 @@ namespace Larva.DynamicProxy.Tests.Interceptors
                 _counter.TryAdd(userName, 0);
                 _counter.AddOrUpdate(userName, 0, (key, originVal) => System.Threading.Interlocked.Increment(ref originVal));
                 Console.WriteLine($"{userName} has login {_counter[userName]} times");
-                Console.WriteLine($"Welcome {userName}!");
             }
         }
 
