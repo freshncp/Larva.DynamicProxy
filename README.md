@@ -56,9 +56,22 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 
 ## 使用
 
-示例参见：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
+单元测试：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
+
+性能测试：[Larva.DynamicProxy.PerfTests](src/Larva.DynamicProxy.PerfTests)
 
 ## 发布历史
+
+### 2.0.0 (更新日期：2020/06/19)
+
+```plain
+1）重构，取消反射调用，改为委托调用；
+2）拦截器，由类型改为对象传入；
+3）修复动态代理对泛型方法的支持；
+4）优化动态代理IL生成；
+5）修复StandardInterceptor，拦截异步方法时，Dispose的调用应仍在主线程里执行，确保类似AsyncLocal变量在主线程上被释放；
+6）优化StandardInterceptor，对PostProceed、ExceptionThrown、Dispose的调用，捕获异常抛出。
+```
 
 ### 2.0.0-beta4 (更新日期：2020/06/19)
 
@@ -66,7 +79,7 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 1）修复动态代理对泛型方法的支持；
 2）IInvocation 增加属性 GenericArgumentTypes；
 3）增加性能测试代码。
-``
+```
 
 ### 2.0.0-beta3 (更新日期：2020/06/18)
 
