@@ -18,45 +18,60 @@ dotnet add package Larva.DynamicProxy
 
 ## 性能对比
 
+执行100W次，Larva.DynamicProxy 与 Castle.Core的性能对比
+
 ```plain
 Larva.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        659ms
-        GC[Gen]:           357/0/0
+        Excute Time:        389ms
+        GC[Gen]:            66/0/0
 
 Larva.DynamicProxy.TestNormalMethod：
-        Excute Time:        485ms
-        GC[Gen]:           300/0/0
+        Excute Time:        318ms
+        GC[Gen]:            56/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:        613ms
-        GC[Gen]:           351/0/0
+        Excute Time:        372ms
+        GC[Gen]:            65/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:        685ms
-        GC[Gen]:           331/0/0
+        Excute Time:        338ms
+        GC[Gen]:            62/0/0
 
 Castle.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        273ms
-        GC[Gen]:           158/0/0
+        Excute Time:        172ms
+        GC[Gen]:            29/0/0
 
 Castle.DynamicProxy.TestNormalMethod：
-        Excute Time:        193ms
-        GC[Gen]:           107/0/0
+        Excute Time:        109ms
+        GC[Gen]:            20/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:      1,242ms
-        GC[Gen]:           428/0/0
+        Excute Time:        731ms
+        GC[Gen]:            80/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:      1,410ms
-        GC[Gen]:           408/0/0
+        Excute Time:        696ms
+        GC[Gen]:            76/0/0
 ```
 
 ## 使用
 
-示例参见：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
+单元测试：[Larva.DynamicProxy.Tests](src/Larva.DynamicProxy.Tests)
+
+性能测试：[Larva.DynamicProxy.PerfTests](src/Larva.DynamicProxy.PerfTests)
 
 ## 发布历史
+
+### 2.0.0 (更新日期：2020/06/19)
+
+```plain
+1）重构，取消反射调用，改为委托调用；
+2）拦截器，由类型改为对象传入；
+3）修复动态代理对泛型方法的支持；
+4）优化动态代理IL生成；
+5）修复StandardInterceptor，拦截异步方法时，Dispose的调用应仍在主线程里执行，确保类似AsyncLocal变量在主线程上被释放；
+6）优化StandardInterceptor，对PostProceed、ExceptionThrown、Dispose的调用，捕获异常抛出。
+```
 
 ### 2.0.0-beta4 (更新日期：2020/06/19)
 
@@ -64,7 +79,7 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 1）修复动态代理对泛型方法的支持；
 2）IInvocation 增加属性 GenericArgumentTypes；
 3）增加性能测试代码。
-``
+```
 
 ### 2.0.0-beta3 (更新日期：2020/06/18)
 
