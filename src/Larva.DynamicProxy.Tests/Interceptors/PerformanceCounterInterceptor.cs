@@ -1,6 +1,8 @@
 ﻿using Larva.DynamicProxy.Interceptions;
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace Larva.DynamicProxy.Tests.Interceptors
@@ -21,7 +23,17 @@ namespace Larva.DynamicProxy.Tests.Interceptors
             _sw.Value.Stop();
             var elapsedMilliseconds = _sw.Value.ElapsedMilliseconds;
             _sw.Value.Reset();
-            Console.WriteLine($"{invocation.InvocationTarget.GetType().FullName}.{invocation.MemberName} {invocation.MemberOperateType} elapsed {elapsedMilliseconds}ms.");
+            if (invocation.MemberType == MemberTypes.Property)
+            {
+                Console.WriteLine($"{invocation.InvocationTarget.GetType().FullName}.{invocation.MemberName} {invocation.MemberOperateType} elapsed {elapsedMilliseconds}ms.");
+            }
+            else if(invocation.GenericArgumentTypes != Type.EmptyTypes)
+            {
+                Console.WriteLine($"{invocation.InvocationTarget.GetType().FullName}.{invocation.MemberName}<{string.Join(", ", invocation.GenericArgumentTypes.Select(s => s.Name))}>() elapsed {elapsedMilliseconds}ms.");
+            }
+            else{
+                      Console.WriteLine($"{invocation.InvocationTarget.GetType().FullName}.{invocation.MemberName}() elapsed {elapsedMilliseconds}ms.");
+            }
         }
 
         public override void Dispose()

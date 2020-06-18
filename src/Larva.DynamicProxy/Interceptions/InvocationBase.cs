@@ -19,11 +19,12 @@ namespace Larva.DynamicProxy.Interceptions
         /// <param name="memberName">成员名</param>
         /// <param name="memberOperateType">成员操作类型</param>
         /// <param name="argumentTypes">参数类型</param>
+        /// <param name="genericArgumentTypes">泛型参数类型</param>
         /// <param name="returnValueType">返回类型</param>
         /// <param name="invocationTarget">调用目标对象</param>
         /// <param name="proxy">代理对象</param>
         /// <param name="arguments">参数</param>
-        protected InvocationBase(IInterceptor[] interceptors, MemberTypes memberType, string memberName, MemberOperateTypes memberOperateType, Type[] argumentTypes, Type returnValueType, object invocationTarget, object proxy, object[] arguments)
+        protected InvocationBase(IInterceptor[] interceptors, MemberTypes memberType, string memberName, MemberOperateTypes memberOperateType, Type[] argumentTypes, Type[] genericArgumentTypes, Type returnValueType, object invocationTarget, object proxy, object[] arguments)
         {
             if (interceptors != null && interceptors.Length > 0)
             {
@@ -32,7 +33,8 @@ namespace Larva.DynamicProxy.Interceptions
             MemberType = memberType;
             MemberName = memberName;
             MemberOperateType = memberOperateType;
-            ArgumentTypes = argumentTypes;
+            ArgumentTypes = argumentTypes == null ? Type.EmptyTypes : argumentTypes;
+            GenericArgumentTypes = genericArgumentTypes == null ? Type.EmptyTypes : genericArgumentTypes;
             ReturnValueType = returnValueType;
             InvocationTarget = invocationTarget;
             Proxy = proxy;
@@ -58,6 +60,11 @@ namespace Larva.DynamicProxy.Interceptions
         /// 参数类型
         /// </summary>
         public Type[] ArgumentTypes { get; private set; }
+
+        /// <summary>
+        /// 泛型参数类型
+        /// </summary>
+        public Type[] GenericArgumentTypes { get; private set; }
 
         /// <summary>
         /// 返回值类型

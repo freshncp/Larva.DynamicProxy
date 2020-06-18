@@ -19,37 +19,36 @@ dotnet add package Larva.DynamicProxy
 ## 性能对比
 
 ```plain
-
 Larva.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        712ms
-        GC[Gen]:           351/0/0
+        Excute Time:        659ms
+        GC[Gen]:           357/0/0
 
 Larva.DynamicProxy.TestNormalMethod：
-        Excute Time:        532ms
-        GC[Gen]:           295/0/0
+        Excute Time:        485ms
+        GC[Gen]:           300/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:        675ms
-        GC[Gen]:           326/0/0
+        Excute Time:        613ms
+        GC[Gen]:           351/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:        616ms
-        GC[Gen]:           306/0/0
+        Excute Time:        685ms
+        GC[Gen]:           331/0/0
 
 Castle.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        267ms
+        Excute Time:        273ms
         GC[Gen]:           158/0/0
 
 Castle.DynamicProxy.TestNormalMethod：
-        Excute Time:        214ms
+        Excute Time:        193ms
         GC[Gen]:           107/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:      1,568ms
+        Excute Time:      1,242ms
         GC[Gen]:           428/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:      1,489ms
+        Excute Time:      1,410ms
         GC[Gen]:           408/0/0
 ```
 
@@ -63,7 +62,8 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 
 ```plain
 1）修复动态代理对泛型方法的支持；
-2）增加性能测试代码。
+2）IInvocation 增加属性 GenericArgumentTypes；
+3）增加性能测试代码。
 ``
 
 ### 2.0.0-beta3 (更新日期：2020/06/18)

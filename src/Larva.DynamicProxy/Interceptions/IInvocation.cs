@@ -29,6 +29,11 @@ namespace Larva.DynamicProxy.Interceptions
         Type[] ArgumentTypes { get; }
 
         /// <summary>
+        /// 泛型参数类型
+        /// </summary>
+        Type[] GenericArgumentTypes { get; }
+
+        /// <summary>
         /// 返回值类型
         /// </summary>
         Type ReturnValueType { get; }
