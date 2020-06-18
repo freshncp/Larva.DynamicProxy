@@ -58,7 +58,7 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 
 ## 发布历史
 
-### 2.0.0-beta4 (更新日期：2020/06/18)
+### 2.0.0-beta4 (更新日期：2020/06/19)
 
 ```plain
 1）修复动态代理对泛型方法的支持；
