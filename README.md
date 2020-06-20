@@ -1,5 +1,7 @@
 # Larva.DynamicProxy
 
+![.NET Core](https://github.com/freshncp/Larva.DynamicProxy/workflows/.NET%20Core/badge.svg)
+
 dotnet 动态代理类，用于AOP。可以结合IoC框架。此动态代理仅支持通过实现接口来创建代理类。
 
 - 基于对象，返回指定接口的代理类对象，此代理类引用原始对象；
