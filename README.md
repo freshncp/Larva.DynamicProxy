@@ -62,6 +62,13 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 
 ## 发布历史
 
+### 2.0.1 (更新日期：2020/06/20)
+
+```plain
+1）StandardInterceptor方法Dispose变更为CleanProceed；
+2）名字空间Interceptions改为Interception。
+```
+
 ### 2.0.0 (更新日期：2020/06/19)
 
 ```plain

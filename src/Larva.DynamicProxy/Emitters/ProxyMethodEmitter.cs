@@ -1,4 +1,4 @@
-﻿using Larva.DynamicProxy.Interceptions;
+﻿using Larva.DynamicProxy.Interception;
 using System;
 using System.Collections.Generic;
 using System.Linq;

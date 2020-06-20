@@ -1,13 +1,13 @@
 ﻿namespace Larva.DynamicProxy.PerfTests.Interceptors
 {
-    public class ValidateInterceptor : Larva.DynamicProxy.Interceptions.IInterceptor, Castle.DynamicProxy.IInterceptor
+    public class ValidateInterceptor : Larva.DynamicProxy.Interception.IInterceptor, Castle.DynamicProxy.IInterceptor
     {
         public void Intercept(Castle.DynamicProxy.IInvocation invocation)
         {
             invocation.Proceed();
         }
 
-        public void Intercept(Larva.DynamicProxy.Interceptions.IInvocation invocation)
+        public void Intercept(Larva.DynamicProxy.Interception.IInvocation invocation)
         {
             invocation.Proceed();
         }

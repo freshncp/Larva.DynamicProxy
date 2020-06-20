@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Larva.DynamicProxy.Interceptions
+namespace Larva.DynamicProxy.Interception
 {
     /// <summary>
     /// 调用

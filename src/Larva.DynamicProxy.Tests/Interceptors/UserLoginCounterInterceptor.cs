@@ -1,4 +1,4 @@
-﻿using Larva.DynamicProxy.Interceptions;
+﻿using Larva.DynamicProxy.Interception;
 using Larva.DynamicProxy.Tests.Application;
 using System;
 using System.Collections.Concurrent;
@@ -37,7 +37,7 @@ namespace Larva.DynamicProxy.Tests.Interceptors
             }
         }
 
-        public override void Dispose()
+        protected override void CleanProceed()
         {
             System.Threading.Interlocked.Increment(ref _disposeCounter);
             Console.WriteLine($"{nameof(UserLoginCounterInterceptor)} disposed {_disposeCounter} times.");

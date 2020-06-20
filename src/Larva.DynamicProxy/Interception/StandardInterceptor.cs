@@ -2,12 +2,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Larva.DynamicProxy.Interceptions
+namespace Larva.DynamicProxy.Interception
 {
     /// <summary>
     /// 标准拦截器
     /// </summary>
-    public abstract class StandardInterceptor : IInterceptor, IDisposable
+    public abstract class StandardInterceptor : IInterceptor
     {
         /// <summary>
         /// 拦截
@@ -45,7 +45,7 @@ namespace Larva.DynamicProxy.Interceptions
                     if (isFailBeforePostProceed
                         || !invocation.IsInvocationTargetInvocated)
                     {
-                        EatException(() => Dispose());
+                        EatException(() => CleanProceed());
                     }
                 }
                 if (!isFailBeforePostProceed
@@ -53,7 +53,7 @@ namespace Larva.DynamicProxy.Interceptions
                 {
                     if (invocation.ReturnValue == null)
                     {
-                        EatException(() => Dispose());
+                        EatException(() => CleanProceed());
                     }
                     else
                     {
@@ -63,16 +63,15 @@ namespace Larva.DynamicProxy.Interceptions
                             if (lastTask.Exception == null)
                             {
                                 EatException(() => PostProceed(((InvocationAndEventWaitHandle)state).Invocation));
-                                ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
                             }
                             else
                             {
                                 EatException(() => ExceptionThrown(((InvocationAndEventWaitHandle)state).Invocation, lastTask.Exception.InnerExceptions[0]));
-                                ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
                             }
+                            ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
                         }, new InvocationAndEventWaitHandle(invocation, waitPostProceedOrExceptionThrown)).ConfigureAwait(false);
                         waitPostProceedOrExceptionThrown.WaitOne();
-                        EatException(() => Dispose());
+                        EatException(() => CleanProceed());
                     }
                 }
             }
@@ -98,7 +97,7 @@ namespace Larva.DynamicProxy.Interceptions
                 }
                 finally
                 {
-                    EatException(() => Dispose());
+                    EatException(() => CleanProceed());
                 }
             }
         }
@@ -126,9 +125,9 @@ namespace Larva.DynamicProxy.Interceptions
         }
 
         /// <summary>
-        /// 释放
+        /// 调用结束的清理
         /// </summary>
-        public virtual void Dispose()
+        protected virtual void CleanProceed()
         {
 
         }

@@ -1,5 +1,5 @@
 ﻿using Larva.DynamicProxy.Emitters;
-using Larva.DynamicProxy.Interceptions;
+using Larva.DynamicProxy.Interception;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

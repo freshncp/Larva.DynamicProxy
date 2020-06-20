@@ -2,26 +2,27 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Larva.DynamicProxy.Interceptions
+namespace Larva.DynamicProxy.Interception
 {
     /// <summary>
-    /// 属性的Get方法调用
+    /// 属性的Set方法调用
     /// </summary>
-    public sealed class PropertyGetInvocation : InvocationBase
+    public sealed class PropertySetInvocation : InvocationBase
     {
         private Queue<IInterceptor> _interceptors;
 
         /// <summary>
-        /// 属性的Get方法调用
+        /// 属性的Set方法调用
         /// </summary>
         /// <param name="interceptors">拦截器</param>
         /// <param name="propertyName">属性名</param>
         /// <param name="propertyType">属性类型</param>
-        /// <param name="invocationTarget">调用目标对象</param>
+        /// <param name="invocationTarget">调用目标</param>
         /// <param name="methodInvocationTargetFunc">调用目标方法回调</param>
         /// <param name="proxy">代理对象</param>
-        public PropertyGetInvocation(IInterceptor[] interceptors, string propertyName, Type propertyType, object invocationTarget, Func<object> methodInvocationTargetFunc, object proxy)
-            : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertyGet, Type.EmptyTypes, Type.EmptyTypes, propertyType, invocationTarget, proxy, null)
+        /// <param name="propertyValue">属性值</param>
+        public PropertySetInvocation(IInterceptor[] interceptors, string propertyName, Type propertyType, object invocationTarget, Action<object> methodInvocationTargetFunc, object proxy, object propertyValue)
+            : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertySet, new Type[] { propertyType }, Type.EmptyTypes, typeof(void), invocationTarget, proxy, new object[] { propertyValue })
         {
             if (interceptors != null && interceptors.Length > 0)
             {
@@ -31,9 +32,9 @@ namespace Larva.DynamicProxy.Interceptions
         }
 
         /// <summary>
-        /// 调用目标方法回调
+        /// 目标方法回调
         /// </summary>
-        public Func<object> MethodInvocationTargetFunc { get; private set; }
+        public Action<object> MethodInvocationTargetFunc { get; private set; }
 
         /// <summary>
         /// 调用目标对象
@@ -41,7 +42,8 @@ namespace Larva.DynamicProxy.Interceptions
         /// <returns></returns>
         protected override object InvokeInvocationTarget()
         {
-            return MethodInvocationTargetFunc.Invoke();
+            MethodInvocationTargetFunc.Invoke(Arguments[0]);
+            return null;
         }
     }
 }

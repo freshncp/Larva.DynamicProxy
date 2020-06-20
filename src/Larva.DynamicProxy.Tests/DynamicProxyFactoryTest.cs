@@ -1,4 +1,4 @@
-using Larva.DynamicProxy.Interceptions;
+using Larva.DynamicProxy.Interception;
 using Larva.DynamicProxy.Tests.Application;
 using Larva.DynamicProxy.Tests.Interceptors;
 using Larva.DynamicProxy.Tests.Repositories;

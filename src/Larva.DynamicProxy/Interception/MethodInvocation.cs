@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Larva.DynamicProxy.Interceptions
+namespace Larva.DynamicProxy.Interception
 {
     /// <summary>
     /// 方法调用
