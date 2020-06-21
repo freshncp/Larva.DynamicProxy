@@ -64,6 +64,12 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 
 ## 发布历史
 
+### 2.0.3 (更新日期：2020/06/21)
+
+```plain
+1）StandardInterceptor取消方法ExceptionThrown，不再捕获被拦截方法的异常，避免对上层调用的异常处理带来麻烦。
+```
+
 ### 2.0.2 (更新日期：2020/06/21)
 
 ```plain

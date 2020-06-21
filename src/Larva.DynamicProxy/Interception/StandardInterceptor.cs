@@ -28,18 +28,6 @@ namespace Larva.DynamicProxy.Interception
                         EatException(() => PostProceed(invocation));
                     }
                 }
-                catch (Exception ex)
-                {
-                    EatException(() => ExceptionThrown(invocation, ex));
-                    if (ex is AggregateException)
-                    {
-                        throw ex;
-                    }
-                    else
-                    {
-                        throw new AggregateException(ex);
-                    }
-                }
                 finally
                 {
                     if (isFailBeforePostProceed
@@ -64,10 +52,6 @@ namespace Larva.DynamicProxy.Interception
                             {
                                 EatException(() => PostProceed(((InvocationAndEventWaitHandle)state).Invocation));
                             }
-                            else
-                            {
-                                EatException(() => ExceptionThrown(((InvocationAndEventWaitHandle)state).Invocation, lastTask.Exception.InnerExceptions[0]));
-                            }
                             ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
                         }, new InvocationAndEventWaitHandle(invocation, waitPostProceedOrExceptionThrown)).ConfigureAwait(false);
                         waitPostProceedOrExceptionThrown.WaitOne();
@@ -82,18 +66,6 @@ namespace Larva.DynamicProxy.Interception
                     PreProceed(invocation);
                     invocation.Proceed();
                     EatException(() => PostProceed(invocation));
-                }
-                catch (Exception ex)
-                {
-                    EatException(() => ExceptionThrown(invocation, ex));
-                    if (ex is AggregateException)
-                    {
-                        throw ex;
-                    }
-                    else
-                    {
-                        throw new AggregateException(ex);
-                    }
                 }
                 finally
                 {
@@ -113,16 +85,6 @@ namespace Larva.DynamicProxy.Interception
         /// </summary>
         /// <param name="invocation">调用</param>
         protected abstract void PostProceed(IInvocation invocation);
-
-        /// <summary>
-        /// 调用时抛异常
-        /// </summary>
-        /// <param name="invocation">调用</param>
-        /// <param name="exception">异常</param>
-        protected virtual void ExceptionThrown(IInvocation invocation, Exception exception)
-        {
-
-        }
 
         /// <summary>
         /// 调用结束的清理
