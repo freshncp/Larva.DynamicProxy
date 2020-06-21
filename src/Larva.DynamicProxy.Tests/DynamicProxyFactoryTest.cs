@@ -13,10 +13,8 @@ namespace Larva.DynamicProxy.Tests
         {
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
-                new IInterceptor[] {
-                    new UserLoginCounterInterceptor(),
-                    new PerformanceCounterInterceptor()
-                });
+                new UserLoginCounterInterceptor(),
+                new PerformanceCounterInterceptor());
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
         }
 

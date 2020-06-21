@@ -72,10 +72,6 @@ namespace Larva.DynamicProxy.Emitters
                 {
                     methodFuncGenerator.Emit(OpCodes.Unbox_Any, unwrappedParameterType);
                 }
-                else if (unwrappedParameterType != typeof(object))
-                {
-                    methodFuncGenerator.Emit(OpCodes.Castclass, unwrappedParameterType);
-                }
                 var methodFuncArgumentVar = methodFuncGenerator.DeclareLocal(unwrappedParameterType);
                 methodFuncGenerator.Emit(OpCodes.Stloc, methodFuncArgumentVar);
                 methodFuncArgumentVarList[i] = methodFuncArgumentVar;
@@ -98,10 +94,6 @@ namespace Larva.DynamicProxy.Emitters
                     if (parameters[i].ParameterType.IsValueType)
                     {
                         methodFuncGenerator.Emit(OpCodes.Unbox_Any, parameters[i].ParameterType);
-                    }
-                    else if (parameters[i].ParameterType != typeof(object))
-                    {
-                        methodFuncGenerator.Emit(OpCodes.Castclass, parameters[i].ParameterType);
                     }
                 }
             }
@@ -131,7 +123,6 @@ namespace Larva.DynamicProxy.Emitters
                 {
                     continue;
                 }
-                var unwrappedParameterType = parameters[i].ParameterType.GetElementType();
 
                 methodFuncGenerator.Ldarg(1);
                 methodFuncGenerator.Ldc_I4(i);
@@ -195,11 +186,10 @@ namespace Larva.DynamicProxy.Emitters
                 methodGenerator.Emit(OpCodes.Ldtoken, unwrappedParameterType);
                 methodGenerator.Emit(OpCodes.Stelem_Ref);
             }
-            var argumentTypeArrayVar = methodGenerator.DeclareLocal(typeof(Type[]));
-            methodGenerator.Emit(OpCodes.Stloc, argumentTypeArrayVar);
+            var argumentTypeArrayField = _typeGeneratorInfo.Builder.DefineField($"_{proxiedTypeMethodInfo.Name}_ArgumentTypes", typeof(Type[]), FieldAttributes.Private | FieldAttributes.Static);
+            methodGenerator.Emit(OpCodes.Stsfld, argumentTypeArrayField);
 
             // 创建泛型参数类型列表的局部变量
-            var genericArgumentTypeArrayVar = methodGenerator.DeclareLocal(typeof(Type[]));
             if (proxiedTypeMethodInfo.IsGenericMethod)
             {
                 methodGenerator.Ldc_I4(methodGenericParameters.Length);
@@ -216,7 +206,8 @@ namespace Larva.DynamicProxy.Emitters
             {
                 methodGenerator.Emit(OpCodes.Ldnull);
             }
-            methodGenerator.Emit(OpCodes.Stloc, genericArgumentTypeArrayVar);
+            var genericArgumentTypeArrayField = _typeGeneratorInfo.Builder.DefineField($"_{proxiedTypeMethodInfo.Name}_GenericArgumentTypes", typeof(Type[]), FieldAttributes.Private | FieldAttributes.Static);
+            methodGenerator.Emit(OpCodes.Stsfld, genericArgumentTypeArrayField);
 
             // 创建参数列表的局部变量
             methodGenerator.Ldc_I4(parameters.Length);
@@ -245,8 +236,8 @@ namespace Larva.DynamicProxy.Emitters
 
             methodGenerator.Emit(OpCodes.Ldsfld, interceptorsField);// 拦截器
             methodGenerator.Emit(OpCodes.Ldstr, proxiedTypeMethodInfo.Name);// 方法名
-            methodGenerator.Emit(OpCodes.Ldloc, argumentTypeArrayVar);// 参数类型列表
-            methodGenerator.Emit(OpCodes.Ldloc, genericArgumentTypeArrayVar);// 泛型参数类型列表
+            methodGenerator.Emit(OpCodes.Ldsfld, argumentTypeArrayField);// 参数类型列表
+            methodGenerator.Emit(OpCodes.Ldsfld, genericArgumentTypeArrayField);// 泛型参数类型列表
             methodGenerator.Emit(OpCodes.Ldtoken, proxiedTypeMethodInfo.ReturnType);// 返回类型            
 
             // 目标对象

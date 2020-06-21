@@ -16,42 +16,47 @@ namespace Larva.DynamicProxy.PerfTests
         private static void RunLarvaDynamicProxy()
         {
             var proxy = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IProxyImplementInterface>(new TestProxyImplementInterface(), new ValidateInterceptor(), new LogInterceptor());
-            var a = 1;
-            var b = "2";
-            var b2 = new string[] { "2" };
-            var c = new ValueA { Value = 3 };
-            var d = 0L;
             CodeTimerAdvance.TimeByConsole("Larva.DynamicProxy.TestMethodWithRefAndOutParameter", COUNT, times =>
             {
-                var result = proxy.TestMethodWithRefAndOutParameter(ref a, ref b2, out d);
-                if(result != d)
+                var a = 1;
+                var b = new string[] { "2" };
+                var c = 0L;
+                var result = proxy.TestMethodWithRefAndOutParameter(ref a, ref b, out c);
+                if (result != c)
                 {
-                    throw new ApplicationException("TestMethodWithRefAndOutParameter fail");
+                    throw new ApplicationException("Larva.DynamicProxy.TestMethodWithRefAndOutParameter fail");
                 }
-
             });
             CodeTimerAdvance.TimeByConsole("Larva.DynamicProxy.TestNormalMethod", COUNT, times =>
             {
+                var a = 1;
+                var b = "2";
                 var result = proxy.TestNormalMethod(a, b);
-                if (result != 3)
+                if (result != (a + 1) + Convert.ToInt32(b))
                 {
-                    throw new ApplicationException("TestNormalMethod fail");
+                    throw new ApplicationException($"Larva.DynamicProxy.TestNormalMethod fail, actual:{result}, expected:{(a + 1) + Convert.ToInt32(b)}");
                 }
             });
             CodeTimerAdvance.TimeByConsole("Larva.DynamicProxy.TestMethodWithGenericParameter", COUNT, times =>
             {
+                var a = 1;
+                var b = "2";
+                var c = new ValueA { Value = 3 };
                 var result = proxy.TestMethodWithGenericParameter(a, b, new ValueA[] { c });
-                if (result != 3 + c.Value)
+                if (result != (a + 1) + Convert.ToInt32(b) + c.Value)
                 {
-                    throw new ApplicationException("TestMethodWithGenericParameter fail");
+                    throw new ApplicationException($"Larva.DynamicProxy.TestMethodWithGenericParameter fail, actual:{result}, expected:{(a + 1) + Convert.ToInt32(b) + c.Value}");
                 }
             });
             CodeTimerAdvance.TimeByConsole("Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter", COUNT, times =>
             {
+                var a = 1;
+                var b = "2";
+                var c = new ValueA { Value = 3 };
                 var result = proxy.TestMethodWithGenericParameterAndRefParameter(a, b, ref c);
                 if (result != c.Value)
                 {
-                    throw new ApplicationException("TestMethodWithGenericParameterAndRefParameter fail");
+                    throw new ApplicationException("Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter fail");
                 }
             });
         }
@@ -59,41 +64,47 @@ namespace Larva.DynamicProxy.PerfTests
         private static void RunCastleDynamicProxy()
         {
             var proxy = new Castle.DynamicProxy.ProxyGenerator().CreateInterfaceProxyWithTarget<IProxyImplementInterface>(new TestProxyImplementInterface(), new ValidateInterceptor(), new LogInterceptor());
-            var a = 1;
-            var b = "2";
-            var b2 = new string[] { "2" };
-            var c = new ValueA { Value = 3 };
-            var d = 0L;
             CodeTimerAdvance.TimeByConsole("Castle.DynamicProxy.TestMethodWithRefAndOutParameter", COUNT, times =>
             {
-                var result = proxy.TestMethodWithRefAndOutParameter(ref a, ref b2, out d);
-                if (result != d)
+                var a = 1;
+                var b = new string[] { "2" };
+                var c = 0L;
+                var result = proxy.TestMethodWithRefAndOutParameter(ref a, ref b, out c);
+                if (result != c)
                 {
-                    throw new ApplicationException("TestMethodWithRefAndOutParameter fail");
+                    throw new ApplicationException("Castle.DynamicProxy.TestMethodWithRefAndOutParameter fail");
                 }
             });
             CodeTimerAdvance.TimeByConsole("Castle.DynamicProxy.TestNormalMethod", COUNT, times =>
             {
+                var a = 1;
+                var b = "2";
                 var result = proxy.TestNormalMethod(a, b);
-                if (result != 3)
+                if (result != (a + 1) + Convert.ToInt32(b))
                 {
-                    throw new ApplicationException("TestNormalMethod fail");
+                    throw new ApplicationException($"Castle.DynamicProxy.TestNormalMethod fail, actual:{result}, expected:{(a + 1) + Convert.ToInt32(b)}");
                 }
             });
             CodeTimerAdvance.TimeByConsole("Castle.DynamicProxy.TestMethodWithGenericParameter", COUNT, times =>
             {
+                var a = 1;
+                var b = "2";
+                var c = new ValueA { Value = 3 };
                 var result = proxy.TestMethodWithGenericParameter(a, b, new ValueA[] { c });
-                if (result != 3 + c.Value)
+                if (result != (a + 1) + Convert.ToInt32(b) + c.Value)
                 {
-                    throw new ApplicationException("TestMethodWithGenericParameter fail");
+                    throw new ApplicationException($"Castle.DynamicProxy.TestMethodWithGenericParameter fail, actual:{result}, expected:{(a + 1) + Convert.ToInt32(b) + c.Value}");
                 }
             });
             CodeTimerAdvance.TimeByConsole("Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter", COUNT, times =>
             {
+                var a = 1;
+                var b = "2";
+                var c = new ValueA { Value = 3 };
                 var result = proxy.TestMethodWithGenericParameterAndRefParameter(a, b, ref c);
                 if (result != c.Value)
                 {
-                    throw new ApplicationException("TestMethodWithGenericParameterAndRefParameter fail");
+                    throw new ApplicationException("Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter fail");
                 }
             });
         }
@@ -102,7 +113,7 @@ namespace Larva.DynamicProxy.PerfTests
     #region 测试数据
     public interface IProxyImplementInterface
     {
-        int TestMethodWithRefAndOutParameter(ref int a, ref string[] b, out long d);
+        int TestMethodWithRefAndOutParameter(ref int a, ref string[] b, out long c);
 
         int TestNormalMethod(int a, string b);
 
@@ -125,10 +136,10 @@ namespace Larva.DynamicProxy.PerfTests
 
     public class TestProxyImplementInterface : IProxyImplementInterface
     {
-        public virtual int TestMethodWithRefAndOutParameter(ref int a, ref string[] b, out long d)
+        public virtual int TestMethodWithRefAndOutParameter(ref int a, ref string[] b, out long c)
         {
             var result = a + Convert.ToInt32(b[0]);
-            d = result;
+            c = result;
             return result;
         }
 

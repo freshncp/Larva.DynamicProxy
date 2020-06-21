@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Larva.DynamicProxy.Interception
@@ -9,7 +8,7 @@ namespace Larva.DynamicProxy.Interception
     /// </summary>
     public sealed class PropertySetInvocation : InvocationBase
     {
-        private Queue<IInterceptor> _interceptors;
+        private Action<object> _setMethodInvocationTargetFunc;
 
         /// <summary>
         /// 属性的Set方法调用
@@ -24,17 +23,8 @@ namespace Larva.DynamicProxy.Interception
         public PropertySetInvocation(IInterceptor[] interceptors, string propertyName, Type propertyType, object invocationTarget, Action<object> methodInvocationTargetFunc, object proxy, object propertyValue)
             : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertySet, new Type[] { propertyType }, Type.EmptyTypes, typeof(void), invocationTarget, proxy, new object[] { propertyValue })
         {
-            if (interceptors != null && interceptors.Length > 0)
-            {
-                _interceptors = new Queue<IInterceptor>(interceptors);
-            }
-            MethodInvocationTargetFunc = methodInvocationTargetFunc;
+            _setMethodInvocationTargetFunc = methodInvocationTargetFunc;
         }
-
-        /// <summary>
-        /// 目标方法回调
-        /// </summary>
-        public Action<object> MethodInvocationTargetFunc { get; private set; }
 
         /// <summary>
         /// 调用目标对象
@@ -42,7 +32,7 @@ namespace Larva.DynamicProxy.Interception
         /// <returns></returns>
         protected override object InvokeInvocationTarget()
         {
-            MethodInvocationTargetFunc.Invoke(Arguments[0]);
+            _setMethodInvocationTargetFunc.Invoke(Arguments[0]);
             return null;
         }
     }

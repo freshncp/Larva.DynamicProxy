@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Larva.DynamicProxy.Interception
@@ -9,7 +8,7 @@ namespace Larva.DynamicProxy.Interception
     /// </summary>
     public sealed class MethodInvocation : InvocationBase
     {
-        private Queue<IInterceptor> _interceptors;
+        private Func<object[], object> _methodInvocationTargetFunc;
 
         /// <summary>
         /// 方法调用
@@ -26,17 +25,8 @@ namespace Larva.DynamicProxy.Interception
         public MethodInvocation(IInterceptor[] interceptors, string methodName, Type[] argumentTypes, Type[] genericArgumentTypes, Type returnValueType, object invocationTarget, Func<object[], object> methodInvocationTargetFunc, object proxy, object[] arguments)
             : base(interceptors, MemberTypes.Method, methodName, MemberOperateTypes.None, argumentTypes, genericArgumentTypes, returnValueType, invocationTarget, proxy, arguments)
         {
-            if (interceptors != null && interceptors.Length > 0)
-            {
-                _interceptors = new Queue<IInterceptor>(interceptors);
-            }
-            MethodInvocationTargetFunc = methodInvocationTargetFunc;
+            _methodInvocationTargetFunc = methodInvocationTargetFunc;
         }
-
-        /// <summary>
-        /// 调用目标方法回调
-        /// </summary>
-        public Func<object[], object> MethodInvocationTargetFunc { get; private set; }
 
         /// <summary>
         /// 调用目标对象
@@ -44,7 +34,7 @@ namespace Larva.DynamicProxy.Interception
         /// <returns></returns>
         protected override object InvokeInvocationTarget()
         {
-            return MethodInvocationTargetFunc.Invoke(Arguments);
+            return _methodInvocationTargetFunc.Invoke(Arguments);
         }
     }
 }

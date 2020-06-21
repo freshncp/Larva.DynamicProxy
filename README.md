@@ -24,36 +24,36 @@ dotnet add package Larva.DynamicProxy
 
 ```plain
 Larva.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        389ms
-        GC[Gen]:            66/0/0
+        Excute Time:        319ms
+        GC[Gen]:            63/0/0
 
 Larva.DynamicProxy.TestNormalMethod：
-        Excute Time:        318ms
-        GC[Gen]:            56/0/0
+        Excute Time:        271ms
+        GC[Gen]:            48/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:        372ms
-        GC[Gen]:            65/0/0
+        Excute Time:        324ms
+        GC[Gen]:            61/0/0
 
 Larva.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:        338ms
-        GC[Gen]:            62/0/0
+        Excute Time:        310ms
+        GC[Gen]:            57/0/0
 
 Castle.DynamicProxy.TestMethodWithRefAndOutParameter：
-        Excute Time:        172ms
-        GC[Gen]:            29/0/0
+        Excute Time:        199ms
+        GC[Gen]:            36/0/0
 
 Castle.DynamicProxy.TestNormalMethod：
-        Excute Time:        109ms
-        GC[Gen]:            20/0/0
+        Excute Time:        160ms
+        GC[Gen]:            22/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameter：
-        Excute Time:        731ms
-        GC[Gen]:            80/0/0
+        Excute Time:        717ms
+        GC[Gen]:            86/0/0
 
 Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
-        Excute Time:        696ms
-        GC[Gen]:            76/0/0
+        Excute Time:        689ms
+        GC[Gen]:            82/0/0
 ```
 
 ## 使用
@@ -63,6 +63,12 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 性能测试：[Larva.DynamicProxy.PerfTests](src/Larva.DynamicProxy.PerfTests)
 
 ## 发布历史
+
+### 2.0.2 (更新日期：2020/06/21)
+
+```plain
+1）性能优化。
+```
 
 ### 2.0.1 (更新日期：2020/06/20)
 

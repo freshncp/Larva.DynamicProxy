@@ -122,10 +122,6 @@ namespace Larva.DynamicProxy.Emitters
                 {
                     setMethodFuncGenerator.Emit(OpCodes.Unbox_Any, proxiedTypePropertyInfo.PropertyType);
                 }
-                else if (proxiedTypePropertyInfo.PropertyType != typeof(object))
-                {
-                    setMethodFuncGenerator.Emit(OpCodes.Castclass, proxiedTypePropertyInfo.PropertyType);
-                }
                 setMethodFuncGenerator.Emit(OpCodes.Callvirt, proxiedTypePropertyInfo.SetMethod);
                 setMethodFuncGenerator.Emit(OpCodes.Ret);
 

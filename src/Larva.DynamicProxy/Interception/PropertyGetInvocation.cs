@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Larva.DynamicProxy.Interception
@@ -9,7 +8,7 @@ namespace Larva.DynamicProxy.Interception
     /// </summary>
     public sealed class PropertyGetInvocation : InvocationBase
     {
-        private Queue<IInterceptor> _interceptors;
+        private Func<object> _getMethodInvocationTargetFunc;
 
         /// <summary>
         /// 属性的Get方法调用
@@ -23,17 +22,8 @@ namespace Larva.DynamicProxy.Interception
         public PropertyGetInvocation(IInterceptor[] interceptors, string propertyName, Type propertyType, object invocationTarget, Func<object> methodInvocationTargetFunc, object proxy)
             : base(interceptors, MemberTypes.Property, propertyName, MemberOperateTypes.PropertyGet, Type.EmptyTypes, Type.EmptyTypes, propertyType, invocationTarget, proxy, null)
         {
-            if (interceptors != null && interceptors.Length > 0)
-            {
-                _interceptors = new Queue<IInterceptor>(interceptors);
-            }
-            MethodInvocationTargetFunc = methodInvocationTargetFunc;
+            _getMethodInvocationTargetFunc = methodInvocationTargetFunc;
         }
-
-        /// <summary>
-        /// 调用目标方法回调
-        /// </summary>
-        public Func<object> MethodInvocationTargetFunc { get; private set; }
 
         /// <summary>
         /// 调用目标对象
@@ -41,7 +31,7 @@ namespace Larva.DynamicProxy.Interception
         /// <returns></returns>
         protected override object InvokeInvocationTarget()
         {
-            return MethodInvocationTargetFunc.Invoke();
+            return _getMethodInvocationTargetFunc.Invoke();
         }
     }
 }
