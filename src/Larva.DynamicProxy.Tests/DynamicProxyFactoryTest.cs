@@ -35,10 +35,8 @@ namespace Larva.DynamicProxy.Tests
             var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
                 typeof(IUserLoginService),
                 typeof(UserLoginService),
-                new IInterceptor[] {
-                    new UserLoginCounterInterceptor(),
-                    new PerformanceCounterInterceptor()
-                });
+                new UserLoginCounterInterceptor(),
+                new PerformanceCounterInterceptor());
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByNewObj", userLoginServiceType.Name);
         }
 
@@ -50,10 +48,8 @@ namespace Larva.DynamicProxy.Tests
                 var userLoginServiceType = Larva.DynamicProxy.DynamicProxyFactory.CreateProxyType(
                     typeof(IUserLoginService),
                     typeof(AnotherUserLoginService),
-                    new IInterceptor[] {
-                        new UserLoginCounterInterceptor(),
-                        new PerformanceCounterInterceptor()
-                });
+                    new UserLoginCounterInterceptor(),
+                    new PerformanceCounterInterceptor());
             });
         }
 
@@ -62,10 +58,8 @@ namespace Larva.DynamicProxy.Tests
         {
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
-                new IInterceptor[] {
-                    new UserLoginCounterInterceptor(),
-                    new PerformanceCounterInterceptor()
-                });
+                new UserLoginCounterInterceptor(),
+                new PerformanceCounterInterceptor());
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
 
             int retryCount = 1;
@@ -83,10 +77,8 @@ namespace Larva.DynamicProxy.Tests
         {
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
-                new IInterceptor[] {
-                    new UserLoginCounterInterceptor(),
-                    new PerformanceCounterInterceptor()
-                });
+                new UserLoginCounterInterceptor(),
+                new PerformanceCounterInterceptor());
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
 
             var result = userLoginService.LoginAsync("rose", "123456")
@@ -99,14 +91,29 @@ namespace Larva.DynamicProxy.Tests
         {
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
-                new IInterceptor[] {
-                    new UserLoginCounterInterceptor(),
-                    new PerformanceCounterInterceptor()
-                });
+                new UserLoginCounterInterceptor(),
+                new PerformanceCounterInterceptor());
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
 
             var result = userLoginService.ActAs<CustomerDto>(new CustomerDto { RealName = "jerry" });
             Assert.Equal("CustomerDto:RealName=jerry", result.ToString());
+        }
+
+        [Fact]
+        public void TestNotInvokeProcessFromInterceptorMustThrowInvocationNotProceedException()
+        {
+            var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
+                new UserLoginService(new UserLoginRepository()),
+                new BadInterceptor());
+            Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
+
+            var ex = Assert.Throws<Larva.DynamicProxy.InvocationNotProceedException>(() =>
+            {
+                int retryCount = 1;
+                var result = userLoginService.Login("jack", "123456", 996, out bool accountExists, ref retryCount, out UserDto userDto);
+            });
+            Assert.Equal($"Interceptor \"{typeof(BadInterceptor).FullName}\" not invoke method \"{nameof(IInvocation.Proceed)}\" of IInvocation.", ex.Message);
+            Assert.Equal(typeof(BadInterceptor), ex.LastProceedInterceptorType);
         }
     }
 }

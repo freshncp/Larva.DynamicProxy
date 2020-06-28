@@ -270,6 +270,19 @@ namespace Larva.DynamicProxy.Emitters
             methodGenerator.Emit(OpCodes.Ldloc, invocationVar);
             methodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetMethod(nameof(IInvocation.Proceed)));
 
+            // 验证目标方法是否被调用
+            var invocatedLabel = methodGenerator.DefineLabel();
+            methodGenerator.Emit(OpCodes.Ldloc, invocationVar);
+            methodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.IsInvocationTargetInvocated)).GetMethod);
+            methodGenerator.Emit(OpCodes.Brtrue_S, invocatedLabel);
+
+            methodGenerator.Emit(OpCodes.Ldloc, invocationVar);
+            methodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.LastProceedInterceptorType)).GetMethod);
+            methodGenerator.Emit(OpCodes.Newobj, typeof(InvocationNotProceedException).GetConstructor(new Type[] { typeof(Type) }));
+            methodGenerator.Emit(OpCodes.Throw, typeof(InvocationNotProceedException));
+            
+            methodGenerator.MarkLabel(invocatedLabel);
+            
             // ref/out 参数赋值
             for (var i = 0; i < parameters.Length; i++)
             {

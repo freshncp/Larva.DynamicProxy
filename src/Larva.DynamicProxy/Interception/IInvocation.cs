@@ -62,6 +62,11 @@ namespace Larva.DynamicProxy.Interception
         /// 是否目标对象已调用
         /// </summary>
         bool IsInvocationTargetInvocated { get; }
+        
+        /// <summary>
+        /// 上个已处理的拦截器类型（如果没有，即为Null）
+        /// </summary>
+        Type LastProceedInterceptorType { get; }
 
         /// <summary>
         /// 处理

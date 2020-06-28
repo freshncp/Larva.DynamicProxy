@@ -2,8 +2,6 @@
 using Larva.DynamicProxy.Interception;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -57,7 +55,7 @@ namespace Larva.DynamicProxy
         internal static ProxyTypeWrapper InternalCreateProxyType(Type interfaceType, Type proxiedType, IInterceptor[] interceptors)
         {
             var key = new ProxyTypeIdentity(interfaceType, proxiedType);
-            var proxyType = _proxyTypeDics.AddOrUpdate(key, t =>
+            var proxyType = _proxyTypeDics.GetOrAdd(key, t =>
             {
                 AssemblyName assemblyName = new AssemblyName(string.Format("{0}_{1}__DynamicAssembly", proxiedType.Name, interfaceType.Name));
                 var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
@@ -67,23 +65,10 @@ namespace Larva.DynamicProxy
                 {
                     ProxyTypeByNewObj = new ProxyTypeGenerator(moduleBuilder, interfaceType, proxiedType, ProxyTypeGenerateWay.ByNewObj).Generate(),
                     ProxyTypeByInstance = new ProxyTypeGenerator(moduleBuilder, interfaceType, proxiedType, ProxyTypeGenerateWay.ByInstance).Generate(),
-                    Interceptors = interceptors
                 };
-            }, (t, originVal) =>
-            {
-                if (interceptors != null)
-                {
-                    var interceptorList = new List<IInterceptor>(interceptors);
-                    if (_proxyTypeDics[key].Interceptors != null)
-                    {
-                        interceptorList.AddRange(_proxyTypeDics[key].Interceptors);
-                    }
-                    originVal.Interceptors = interceptorList.Distinct().ToArray();
-                }
-                return originVal;
             });
-            proxyType.ProxyTypeByNewObj.GetField(Consts.INTERCEPTORS_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.Interceptors);
-            proxyType.ProxyTypeByInstance.GetField(Consts.INTERCEPTORS_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, proxyType.Interceptors);
+            proxyType.ProxyTypeByNewObj.GetField(Consts.INTERCEPTORS_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, interceptors);
+            proxyType.ProxyTypeByInstance.GetField(Consts.INTERCEPTORS_FIELD_NAME, BindingFlags.Public | BindingFlags.Static | BindingFlags.SetField).SetValue(null, interceptors);
             return proxyType;
         }
     }
@@ -93,8 +78,6 @@ namespace Larva.DynamicProxy
         public Type ProxyTypeByNewObj { get; set; }
 
         public Type ProxyTypeByInstance { get; set; }
-
-        public IInterceptor[] Interceptors { get; set; }
     }
 
     internal struct ProxyTypeIdentity

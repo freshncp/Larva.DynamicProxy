@@ -61,6 +61,7 @@ namespace Larva.DynamicProxy.Emitters
                 #region 代理方法
 
                 var getMethod = _typeGeneratorInfo.Builder.DefineMethod("get_" + proxiedTypePropertyInfo.Name, getSetAttr, proxiedTypePropertyInfo.PropertyType, null);
+                property.SetGetMethod(getMethod);
                 var getMethodGenerator = getMethod.GetILGenerator();
 
                 #region 创建 MethodInvocation
@@ -91,6 +92,19 @@ namespace Larva.DynamicProxy.Emitters
                 getMethodGenerator.Emit(OpCodes.Ldloc, invocationVar);
                 getMethodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetMethod(nameof(IInvocation.Proceed)));
 
+                // 验证目标方法是否被调用
+                var invocatedLabel = getMethodGenerator.DefineLabel();
+                getMethodGenerator.Emit(OpCodes.Ldloc, invocationVar);
+                getMethodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.IsInvocationTargetInvocated)).GetMethod);
+                getMethodGenerator.Emit(OpCodes.Brtrue_S, invocatedLabel);
+
+                getMethodGenerator.Emit(OpCodes.Ldloc, invocationVar);
+                getMethodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.LastProceedInterceptorType)).GetMethod);
+                getMethodGenerator.Emit(OpCodes.Newobj, typeof(InvocationNotProceedException).GetConstructor(new Type[] { typeof(Type) }));
+                getMethodGenerator.Emit(OpCodes.Throw, typeof(InvocationNotProceedException));
+
+                getMethodGenerator.MarkLabel(invocatedLabel);
+
                 // 返回
                 getMethodGenerator.Emit(OpCodes.Ldloc, invocationVar);
                 getMethodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.ReturnValue)).GetMethod);
@@ -103,7 +117,6 @@ namespace Larva.DynamicProxy.Emitters
                     getMethodGenerator.Emit(OpCodes.Castclass, proxiedTypePropertyInfo.PropertyType);
                 }
                 getMethodGenerator.Emit(OpCodes.Ret);
-                property.SetGetMethod(getMethod);
 
                 #endregion
             }
@@ -132,6 +145,7 @@ namespace Larva.DynamicProxy.Emitters
                 var setMethod = _typeGeneratorInfo.Builder.DefineMethod("set_" + proxiedTypePropertyInfo.Name, getSetAttr, null, new Type[] { proxiedTypePropertyInfo.PropertyType });
                 var methodParameter = proxiedTypePropertyInfo.SetMethod.GetParameters()[0];
                 setMethod.DefineParameter(1, methodParameter.Attributes, methodParameter.Name);
+                property.SetSetMethod(setMethod);
                 var setMethodGenerator = setMethod.GetILGenerator();
 
                 #region 创建 MethodInvocation
@@ -169,9 +183,21 @@ namespace Larva.DynamicProxy.Emitters
                 setMethodGenerator.Emit(OpCodes.Ldloc, invocationVar);
                 setMethodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetMethod(nameof(IInvocation.Proceed)));
 
+                // 验证目标方法是否被调用
+                var invocatedLabel = setMethodGenerator.DefineLabel();
+                setMethodGenerator.Emit(OpCodes.Ldloc, invocationVar);
+                setMethodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.IsInvocationTargetInvocated)).GetMethod);
+                setMethodGenerator.Emit(OpCodes.Brtrue_S, invocatedLabel);
+
+                setMethodGenerator.Emit(OpCodes.Ldloc, invocationVar);
+                setMethodGenerator.Emit(OpCodes.Callvirt, typeof(IInvocation).GetProperty(nameof(IInvocation.LastProceedInterceptorType)).GetMethod);
+                setMethodGenerator.Emit(OpCodes.Newobj, typeof(InvocationNotProceedException).GetConstructor(new Type[] { typeof(Type) }));
+                setMethodGenerator.Emit(OpCodes.Throw, typeof(InvocationNotProceedException));
+
+                setMethodGenerator.MarkLabel(invocatedLabel);
+
                 // 返回
                 setMethodGenerator.Emit(OpCodes.Ret);
-                property.SetSetMethod(setMethod);
 
                 #endregion
             }

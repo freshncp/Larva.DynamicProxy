@@ -97,6 +97,11 @@ namespace Larva.DynamicProxy.Interception
         public bool IsInvocationTargetInvocated { get; private set; }
 
         /// <summary>
+        /// 上个已处理的拦截器类型（如果没有，即为Null）
+        /// </summary>
+        public Type LastProceedInterceptorType { get; private set; }
+
+        /// <summary>
         /// 处理
         /// </summary>
         public void Proceed()
@@ -105,6 +110,7 @@ namespace Larva.DynamicProxy.Interception
             {
                 var interceptor = _interceptors.Dequeue();
                 interceptor.Intercept(this);
+                LastProceedInterceptorType = interceptor.GetType();
             }
             else
             {
