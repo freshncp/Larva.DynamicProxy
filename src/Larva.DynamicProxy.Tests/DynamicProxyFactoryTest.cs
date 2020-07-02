@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Larva.DynamicProxy.Interception;
 using Larva.DynamicProxy.Tests.Application;
 using Larva.DynamicProxy.Tests.Interceptors;
@@ -73,7 +74,7 @@ namespace Larva.DynamicProxy.Tests
         }
 
         [Fact]
-        public void TestAsyncMethod()
+        public async Task TestAsyncMethod()
         {
             var userLoginService = Larva.DynamicProxy.DynamicProxyFactory.CreateProxy<IUserLoginService>(
                 new UserLoginService(new UserLoginRepository()),
@@ -81,8 +82,8 @@ namespace Larva.DynamicProxy.Tests
                 new PerformanceCounterInterceptor());
             Assert.Equal($"{typeof(UserLoginService).Name}__DynamicProxyByInstance", userLoginService.GetType().Name);
 
-            var result = userLoginService.LoginAsync("rose", "123456")
-                .ConfigureAwait(false).GetAwaiter().GetResult();
+            var result = await userLoginService.LoginAsync("rose", "123456")
+                .ConfigureAwait(false);
             Assert.True(result);
         }
 

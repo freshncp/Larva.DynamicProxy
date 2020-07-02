@@ -45,17 +45,18 @@ namespace Larva.DynamicProxy.Interception
                     }
                     else
                     {
-                        var waitPostProceedOrExceptionThrown = new ManualResetEvent(false);
                         ((Task)invocation.ReturnValue).ContinueWith((lastTask, state) =>
                         {
+                            var invocationState = (InvocationState)state;
                             if (lastTask.Exception == null)
                             {
-                                EatException(() => PostProceed(((InvocationAndEventWaitHandle)state).Invocation));
+                                EatException(() => PostProceed(invocationState.Invocation));
                             }
-                            ((InvocationAndEventWaitHandle)state).WaitHandle.Set();
-                        }, new InvocationAndEventWaitHandle(invocation, waitPostProceedOrExceptionThrown)).ConfigureAwait(false);
-                        waitPostProceedOrExceptionThrown.WaitOne();
-                        EatException(() => CleanProceed());
+                            ExecutionContext.Run(invocationState.MainThreadExecutionContext, (state2) =>
+                            {
+                                EatException(() => CleanProceed());
+                            }, invocationState);
+                        }, new InvocationState(invocation, ExecutionContext.Capture())).ConfigureAwait(false);
                     }
                 }
             }
@@ -103,17 +104,17 @@ namespace Larva.DynamicProxy.Interception
             catch { }
         }
 
-        private class InvocationAndEventWaitHandle
+        private class InvocationState
         {
-            public InvocationAndEventWaitHandle(IInvocation invocation, EventWaitHandle waitHandle)
+            public InvocationState(IInvocation invocation, ExecutionContext mainThreadExecutionContext)
             {
                 Invocation = invocation;
-                WaitHandle = waitHandle;
+                MainThreadExecutionContext = mainThreadExecutionContext;
             }
 
             public IInvocation Invocation { get; private set; }
 
-            public EventWaitHandle WaitHandle { get; private set; }
+            public ExecutionContext MainThreadExecutionContext { get; private set; }
         }
     }
 }
