@@ -64,6 +64,13 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 
 ## 发布历史
 
+### 2.0.4 (更新日期：2020/07/02)
+
+```plain
+1）Interceptor 未调用IInvocation.Process()时，抛出InvocationNotProceedException；
+2）优化标准拦截器，异步方法调用 ClearProceed时，放到主线程的执行上下午中执行。
+```
+
 ### 2.0.3 (更新日期：2020/06/21)
 
 ```plain
