@@ -64,6 +64,12 @@ Castle.DynamicProxy.TestMethodWithGenericParameterAndRefParameter：
 
 ## 发布历史
 
+### 2.0.5 (更新日期：2020/07/07)
+
+```plain
+1）优化标准拦截器，异步方法调用 PostProceed、ClearProceed的操作，在被代理方法同一个执行线程上。
+```
+
 ### 2.0.4 (更新日期：2020/07/02)
 
 ```plain
