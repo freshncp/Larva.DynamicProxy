@@ -33,7 +33,7 @@ namespace Larva.DynamicProxy.Interception
                     if (isFailBeforePostProceed
                         || !invocation.IsInvocationTargetInvocated)
                     {
-                        EatException(() => CleanProceed());
+                        EatException(CleanProceed);
                     }
                 }
                 if (!isFailBeforePostProceed
@@ -41,7 +41,7 @@ namespace Larva.DynamicProxy.Interception
                 {
                     if (invocation.ReturnValue == null)
                     {
-                        EatException(() => CleanProceed());
+                        EatException(CleanProceed);
                     }
                     else
                     {
@@ -54,9 +54,9 @@ namespace Larva.DynamicProxy.Interception
                             }
                             ExecutionContext.Run(invocationState.MainThreadExecutionContext, (state2) =>
                             {
-                                EatException(() => CleanProceed());
+                                EatException(CleanProceed);
                             }, invocationState);
-                        }, new InvocationState(invocation, ExecutionContext.Capture())).ConfigureAwait(false);
+                        }, new InvocationState(invocation, ExecutionContext.Capture()), TaskContinuationOptions.ExecuteSynchronously).ConfigureAwait(false);
                     }
                 }
             }
@@ -70,7 +70,7 @@ namespace Larva.DynamicProxy.Interception
                 }
                 finally
                 {
-                    EatException(() => CleanProceed());
+                    EatException(CleanProceed);
                 }
             }
         }
