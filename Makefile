@@ -4,6 +4,9 @@ perf:
 test:
 	dotnet test `pwd`/src/Larva.DynamicProxy.Tests/
 
+publish: pack
+	dotnet nuget push `pwd`/packages/Larva.DynamicProxy.2.0.5.nupkg --source "github"
+
 pack: build
 	mkdir -p `pwd`/packages
 	dotnet pack -c Release `pwd`/src/Larva.DynamicProxy/
