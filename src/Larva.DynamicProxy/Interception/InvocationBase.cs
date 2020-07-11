@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Larva.DynamicProxy.Interception
@@ -28,7 +29,7 @@ namespace Larva.DynamicProxy.Interception
         {
             if (interceptors != null && interceptors.Length > 0)
             {
-                _interceptors = new Queue<IInterceptor>(interceptors);
+                _interceptors = new Queue<IInterceptor>(interceptors.Where(w => w != null));
             }
             MemberType = memberType;
             MemberName = memberName;
